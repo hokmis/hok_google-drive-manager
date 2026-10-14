@@ -12,6 +12,11 @@
     <!-- Babel for JSX Compilation in Browser -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
+      html, body, #root {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
       .custom-scrollbar::-webkit-scrollbar {
         width: 6px;
         height: 6px;
@@ -30,7 +35,7 @@
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans antialiased overflow-hidden select-none">
     
-    <div id="root"></div>
+    <div id="root" class="h-full w-full overflow-hidden"></div>
 
     <script type="text/babel">
       const { useState, useMemo, useEffect, useRef } = React;
@@ -104,12 +109,7 @@
       const IconTag = ({ size = 18, className = "" }) => (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r=".5" fill="currentColor"/></svg>
       );
-      const IconFilter = ({ size = 16, className = "" }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-        </svg>
-      );
-      const IconCheck = ({ size = 14, className = "" }) => (
+      const IconCheck = ({ size = 12, className = "" }) => (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
           <polyline points="20 6 9 17 4 12" />
         </svg>
@@ -245,10 +245,10 @@
         });
 
         // 多選標籤篩選狀態 (支援 年份 + 機構 + 檔案類別 跨維度複合多選)
-        const [selectedYears, setSelectedYears] = useState([]);         // 例如: ['115', '114']
-        const [selectedYearMonths, setSelectedYearMonths] = useState([]);// 例如: ['115-06']
-        const [selectedOrgs, setSelectedOrgs] = useState([]);           // 例如: ['護家', '清泉']
-        const [selectedCategories, setSelectedCategories] = useState([]);// 例如: ['消毒資料', 'SGS驗水資料']
+        const [selectedYears, setSelectedYears] = useState([]);         // 例如: ['115']
+        const [selectedMonths, setSelectedMonths] = useState([]);       // 例如: ['115-06']
+        const [selectedOrgs, setSelectedOrgs] = useState([]);           // 例如: ['護家']
+        const [selectedCategories, setSelectedCategories] = useState([]);// 例如: ['消毒資料']
         const [starredOnly, setStarredOnly] = useState(false);
         const [searchQuery, setSearchQuery] = useState('');
         const [expandedYears, setExpandedYears] = useState(['115', '114']);
@@ -371,8 +371,8 @@
           );
         };
 
-        const toggleYearMonth = (ym) => {
-          setSelectedYearMonths(prev => 
+        const toggleMonth = (ym) => {
+          setSelectedMonths(prev => 
             prev.includes(ym) ? prev.filter(item => item !== ym) : [...prev, ym]
           );
         };
@@ -392,7 +392,7 @@
         // 清除所有標籤篩選
         const clearAllFilters = () => {
           setSelectedYears([]);
-          setSelectedYearMonths([]);
+          setSelectedMonths([]);
           setSelectedOrgs([]);
           setSelectedCategories([]);
           setStarredOnly(false);
@@ -402,12 +402,12 @@
         // 是否有任何篩選條件生效
         const hasActiveFilters = useMemo(() => {
           return selectedYears.length > 0 || 
-                 selectedYearMonths.length > 0 || 
+                 selectedMonths.length > 0 || 
                  selectedOrgs.length > 0 || 
                  selectedCategories.length > 0 || 
                  starredOnly || 
                  searchQuery.trim() !== '';
-        }, [selectedYears, selectedYearMonths, selectedOrgs, selectedCategories, starredOnly, searchQuery]);
+        }, [selectedYears, selectedMonths, selectedOrgs, selectedCategories, starredOnly, searchQuery]);
 
         // 篩選檔案清單 (年份 + 機構 + 檔案類別 跨維度複合多選過濾)
         const filteredRecords = useMemo(() => {
@@ -432,10 +432,10 @@
               return false;
             }
 
-            // 4. 特定年月份篩選 (若選取了特定年月，必須吻合)
-            if (selectedYearMonths.length > 0) {
+            // 4. 特定年月篩選 (若選取了特定年月，必須吻合)
+            if (selectedMonths.length > 0) {
               const ym = `${item.rocYear}-${item.month}`;
-              if (!selectedYearMonths.includes(ym)) return false;
+              if (!selectedMonths.includes(ym)) return false;
             }
 
             // 5. 機構/區域多選篩選 (若選了機構，項目機構必須在選取清單中)
@@ -450,12 +450,12 @@
 
             return true;
           });
-        }, [allCombinedRecords, searchQuery, starredOnly, selectedYears, selectedYearMonths, selectedOrgs, selectedCategories]);
+        }, [allCombinedRecords, searchQuery, starredOnly, selectedYears, selectedMonths, selectedOrgs, selectedCategories]);
 
         // 每次篩選條件改變時重設頁碼至第一頁
         useEffect(() => {
           setCurrentPage(1);
-        }, [searchQuery, starredOnly, selectedYears, selectedYearMonths, selectedOrgs, selectedCategories]);
+        }, [searchQuery, starredOnly, selectedYears, selectedMonths, selectedOrgs, selectedCategories]);
 
         // 分頁資料
         const totalPages = Math.ceil(filteredRecords.length / pageSize) || 1;
@@ -618,13 +618,13 @@ function doPost(e) {
         };
 
         return (
-          <div className="flex h-screen bg-slate-900 text-slate-100 font-sans overflow-hidden">
+          <div className="flex h-screen w-screen bg-slate-900 text-slate-100 font-sans overflow-hidden">
             
-            {/* 側邊多選篩選導航列 */}
-            <aside className="w-84 bg-slate-950 border-r border-slate-800 flex flex-col flex-shrink-0">
+            {/* 側邊導航列 (固定 320px 寬度，不破版) */}
+            <aside className="w-80 min-w-[320px] max-w-[320px] bg-slate-950 border-r border-slate-800 flex flex-col flex-shrink-0 h-full overflow-hidden select-none">
               
               {/* Header */}
-              <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+              <div className="p-4 border-b border-slate-800 flex items-center justify-between flex-shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-slate-900 border border-slate-800 rounded-xl shadow-md">
                     <IconGoogleDrive size={22} />
@@ -650,7 +650,7 @@ function doPost(e) {
               </div>
 
               {/* 快捷操作按鈕群 */}
-              <div className="p-3 border-b border-slate-800/60 space-y-2">
+              <div className="p-3 border-b border-slate-800/60 space-y-2 flex-shrink-0">
                 <button
                   onClick={() => setIsAddModalOpen(true)}
                   className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium py-2 px-3 rounded-xl transition text-xs shadow-md shadow-blue-500/20 active:scale-95"
@@ -679,181 +679,78 @@ function doPost(e) {
                 </div>
               </div>
 
-              {/* 多標籤篩選控制區塊 */}
-              <div className="flex-1 overflow-y-auto px-3.5 py-3 space-y-5 custom-scrollbar text-xs">
+              {/* 導覽與多選標籤樹狀選單 */}
+              <div className="flex-1 overflow-y-auto px-3 py-3 space-y-5 custom-scrollbar text-xs">
                 
-                {/* 篩選標題與一鍵清除按鈕 */}
-                <div className="flex items-center justify-between px-1">
-                  <span className="font-bold text-slate-400 text-xs flex items-center gap-1.5 uppercase tracking-wider">
-                    <IconFilter size={14} className="text-blue-400" />
-                    <span>多選標籤篩選</span>
-                  </span>
-                  {hasActiveFilters && (
-                    <button
-                      onClick={clearAllFilters}
-                      className="text-[11px] text-red-400 hover:text-red-300 hover:underline flex items-center gap-1"
-                    >
-                      <IconX size={12} />
-                      <span>重設全部</span>
-                    </button>
-                  )}
-                </div>
-
-                {/* 收藏開關 */}
-                <button
-                  onClick={() => setStarredOnly(prev => !prev)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-medium transition border ${
-                    starredOnly 
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm shadow-amber-500/10' 
-                      : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:bg-slate-800/60 hover:text-slate-200'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <IconStar size={15} className={starredOnly ? 'text-amber-400' : 'text-slate-400'} fill={starredOnly ? '#F59E0B' : 'none'} />
-                    <span>僅顯示星號重點收藏</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${starredOnly ? 'bg-amber-500/30 text-amber-200' : 'bg-slate-800 text-slate-500'}`}>
-                    {starredIds.length}
-                  </span>
-                </button>
-
-                {/* 維度 1：年份篩選 (可多選) */}
-                <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-3 space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-slate-300 text-[11px] flex items-center gap-1.5">
-                      <IconCalendar size={13} className="text-blue-400" />
-                      <span>1. 檔案年份 (民國 / 西元)</span>
-                    </span>
-                    {selectedYears.length > 0 && (
+                {/* 檔案總覽選單 */}
+                <div className="space-y-1">
+                  <div className="px-3 font-semibold text-slate-500 uppercase tracking-wider mb-1.5 text-[10px] flex items-center justify-between">
+                    <span>文檔總覽</span>
+                    {hasActiveFilters && (
                       <button 
-                        onClick={() => setSelectedYears([])}
-                        className="text-[10px] text-slate-500 hover:text-slate-300"
+                        onClick={clearAllFilters}
+                        className="text-[10px] text-red-400 hover:underline"
                       >
-                        清除年份
+                        重設篩選
                       </button>
                     )}
                   </div>
                   
-                  {/* 年份快捷標籤群 (可多選) */}
-                  <div className="flex flex-wrap gap-1.5">
-                    {yearMonthTree.map(({ rocYear, adYear }) => {
-                      const isSelected = selectedYears.includes(rocYear);
-                      const count = allCombinedRecords.filter(r => r.rocYear === rocYear).length;
-
-                      return (
-                        <button
-                          key={rocYear}
-                          onClick={() => toggleYear(rocYear)}
-                          className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono transition border ${
-                            isSelected
-                              ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-500/20 font-semibold'
-                              : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300 border-slate-700/60'
-                          }`}
-                        >
-                          {isSelected && <IconCheck size={12} />}
-                          <span>{rocYear}年</span>
-                          <span className={`text-[10px] ${isSelected ? 'text-blue-200' : 'text-slate-500'}`}>
-                            ({count})
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* 細部展開月份 (可多選) */}
-                  <div className="pt-2 border-t border-slate-800/60 space-y-1">
-                    <div className="text-[10px] text-slate-500 font-medium">指定月份過濾：</div>
-                    <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto custom-scrollbar">
-                      {yearMonthTree.flatMap(y => y.months).map(ym => {
-                        const isSelected = selectedYearMonths.includes(ym);
-                        const [y, m] = ym.split('-');
-                        const count = allCombinedRecords.filter(r => r.rocYear === y && r.month === m).length;
-                        return (
-                          <button
-                            key={ym}
-                            onClick={() => toggleYearMonth(ym)}
-                            className={`px-2 py-0.5 rounded text-[10px] font-mono transition border ${
-                              isSelected
-                                ? 'bg-cyan-600/30 text-cyan-300 border-cyan-500/50 font-semibold'
-                                : 'bg-slate-800/50 hover:bg-slate-800 text-slate-400 border-slate-800'
-                            }`}
-                          >
-                            {ym} ({count})
-                          </button>
-                        );
-                      })}
+                  {/* 全部檔案 (點擊恢復全覽) */}
+                  <button
+                    onClick={clearAllFilters}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg font-medium transition ${
+                      !hasActiveFilters 
+                        ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30' 
+                        : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <IconFolder size={15} className={!hasActiveFilters ? 'text-blue-400' : 'text-slate-400'} />
+                      <span>全部檔案紀錄</span>
                     </div>
-                  </div>
-                </div>
-
-                {/* 維度 2：檔案類別 (可多選) */}
-                <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-slate-300 text-[11px] flex items-center gap-1.5">
-                      <IconTag size={13} className="text-indigo-400" />
-                      <span>2. 檔案類別 ({categoryStats.length})</span>
+                    <span className="bg-slate-800 px-2 py-0.5 rounded-full text-[10px] text-slate-400 font-mono">
+                      {allCombinedRecords.length}
                     </span>
-                    {selectedCategories.length > 0 && (
-                      <button 
-                        onClick={() => setSelectedCategories([])}
-                        className="text-[10px] text-slate-500 hover:text-slate-300"
-                      >
-                        清除類別
-                      </button>
-                    )}
-                  </div>
+                  </button>
 
-                  <div className="space-y-1">
-                    {categoryStats.map(({ name, count }) => {
-                      const isSelected = selectedCategories.includes(name);
-
-                      return (
-                        <button
-                          key={name}
-                          onClick={() => toggleCategory(name)}
-                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition border ${
-                            isSelected
-                              ? 'bg-indigo-600/25 text-indigo-200 border-indigo-500/50 shadow-sm'
-                              : 'bg-slate-900/30 hover:bg-slate-800/50 text-slate-400 border-transparent hover:text-slate-200'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 truncate">
-                            <div className={`w-3.5 h-3.5 rounded flex items-center justify-center border ${
-                              isSelected ? 'bg-indigo-600 border-indigo-500 text-white' : 'border-slate-700 bg-slate-800'
-                            }`}>
-                              {isSelected && <IconCheck size={10} />}
-                            </div>
-                            <span className="truncate">{name}</span>
-                          </div>
-                          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
-                            isSelected ? 'bg-indigo-500/30 text-indigo-200' : 'bg-slate-800/60 text-slate-500'
-                          }`}>
-                            {count}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {/* 僅星號重點收藏 (可作為標籤切換) */}
+                  <button
+                    onClick={() => setStarredOnly(prev => !prev)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg font-medium transition ${
+                      starredOnly 
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' 
+                        : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <IconStar size={15} className={starredOnly ? 'text-amber-400' : 'text-slate-400'} fill={starredOnly ? '#F59E0B' : 'none'} />
+                      <span>已加星號重點收藏</span>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${starredOnly ? 'bg-amber-500/30 text-amber-200' : 'bg-slate-800 text-slate-500'}`}>
+                      {starredIds.length}
+                    </span>
+                  </button>
                 </div>
 
-                {/* 維度 3：機構 / 區域分類 (可多選) */}
-                <div className="bg-slate-900/40 border border-slate-800/80 rounded-xl p-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-slate-300 text-[11px] flex items-center gap-1.5">
-                      <IconBuilding size={13} className="text-emerald-400" />
-                      <span>3. 機構 / 區域 ({orgStats.length})</span>
+                {/* 維度 1：機構 / 區域分類 (多選支援) */}
+                <div>
+                  <div className="px-3 font-semibold text-slate-500 uppercase tracking-wider mb-1.5 text-[10px] flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <IconBuilding size={12} />
+                      <span>機構 / 區域 ({orgStats.length})</span>
                     </span>
                     {selectedOrgs.length > 0 && (
                       <button 
                         onClick={() => setSelectedOrgs([])}
-                        className="text-[10px] text-slate-500 hover:text-slate-300"
+                        className="text-[10px] text-blue-400 hover:underline"
                       >
-                        清除機構
+                        清除 ({selectedOrgs.length})
                       </button>
                     )}
                   </div>
 
-                  <div className="space-y-1 max-h-56 overflow-y-auto custom-scrollbar pr-1">
+                  <div className="space-y-0.5 max-h-48 overflow-y-auto custom-scrollbar pr-1">
                     {orgStats.map(({ name, count }) => {
                       const isSelected = selectedOrgs.includes(name);
                       const dotColor = getOrgColor(name);
@@ -862,23 +759,19 @@ function doPost(e) {
                         <button
                           key={name}
                           onClick={() => toggleOrg(name)}
-                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition border ${
-                            isSelected
-                              ? 'bg-slate-800 text-blue-200 border-blue-500/50 shadow-sm'
-                              : 'bg-slate-900/30 hover:bg-slate-800/50 text-slate-400 border-transparent hover:text-slate-200'
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition ${
+                            isSelected 
+                              ? 'bg-blue-600/20 text-blue-300 border border-blue-500/40 shadow-sm' 
+                              : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-200'
                           }`}
                         >
                           <div className="flex items-center gap-2 truncate">
-                            <div className={`w-3.5 h-3.5 rounded flex items-center justify-center border ${
-                              isSelected ? 'bg-blue-600 border-blue-500 text-white' : 'border-slate-700 bg-slate-800'
-                            }`}>
-                              {isSelected && <IconCheck size={10} />}
-                            </div>
-                            <span className={`w-2 h-2 rounded-full ${dotColor}`} />
+                            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotColor}`} />
                             <span className="truncate">{name}</span>
+                            {isSelected && <IconCheck size={11} className="text-blue-400 flex-shrink-0" />}
                           </div>
-                          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
-                            isSelected ? 'bg-blue-500/30 text-blue-200' : 'bg-slate-800/60 text-slate-500'
+                          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded flex-shrink-0 ${
+                            isSelected ? 'bg-blue-500/30 text-blue-200' : 'bg-slate-900/60 text-slate-500'
                           }`}>
                             {count}
                           </span>
@@ -888,17 +781,156 @@ function doPost(e) {
                   </div>
                 </div>
 
+                {/* 維度 2：檔案類別分類 (多選支援) */}
+                <div>
+                  <div className="px-3 font-semibold text-slate-500 uppercase tracking-wider mb-1.5 text-[10px] flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <IconTag size={12} />
+                      <span>檔案類別 ({categoryStats.length})</span>
+                    </span>
+                    {selectedCategories.length > 0 && (
+                      <button 
+                        onClick={() => setSelectedCategories([])}
+                        className="text-[10px] text-indigo-400 hover:underline"
+                      >
+                        清除 ({selectedCategories.length})
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="space-y-0.5">
+                    {categoryStats.map(({ name, count }) => {
+                      const isSelected = selectedCategories.includes(name);
+
+                      return (
+                        <button
+                          key={name}
+                          onClick={() => toggleCategory(name)}
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition ${
+                            isSelected 
+                              ? 'bg-indigo-600/25 text-indigo-200 border border-indigo-500/40 shadow-sm' 
+                              : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-200'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <IconFileText size={13} className={isSelected ? 'text-indigo-400' : 'text-slate-500'} />
+                            <span className="truncate">{name}</span>
+                            {isSelected && <IconCheck size={11} className="text-indigo-400 flex-shrink-0" />}
+                          </div>
+                          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded flex-shrink-0 ${
+                            isSelected ? 'bg-indigo-500/30 text-indigo-200' : 'bg-slate-900/60 text-slate-500'
+                          }`}>
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 維度 3：年份 / 月份分類 (多選樹狀) */}
+                <div>
+                  <div className="px-3 font-semibold text-slate-500 uppercase tracking-wider mb-1.5 text-[10px] flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <IconCalendar size={12} />
+                      <span>按年份 / 月份分類</span>
+                    </span>
+                    {(selectedYears.length > 0 || selectedMonths.length > 0) && (
+                      <button 
+                        onClick={() => { setSelectedYears([]); setSelectedMonths([]); }}
+                        className="text-[10px] text-blue-400 hover:underline"
+                      >
+                        清除年份
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    {yearMonthTree.map(({ rocYear, adYear, months }) => {
+                      const isExpanded = expandedYears.includes(rocYear);
+                      const isYearSelected = selectedYears.includes(rocYear);
+                      const totalInYear = allCombinedRecords.filter(r => r.rocYear === rocYear).length;
+
+                      return (
+                        <div key={rocYear} className="space-y-0.5">
+                          <div className="flex items-center gap-1">
+                            {/* 展開/收合箭頭按鈕 */}
+                            <button
+                              onClick={() => setExpandedYears(prev => prev.includes(rocYear) ? prev.filter(y => y !== rocYear) : [...prev, rocYear])}
+                              className="p-1 text-slate-500 hover:text-slate-300 rounded hover:bg-slate-800 transition"
+                              title={isExpanded ? '收合月份' : '展開月份'}
+                            >
+                              {isExpanded ? <IconChevronDown size={13} /> : <IconChevronRight size={13} />}
+                            </button>
+
+                            {/* 年份選取按鈕 (多選切換) */}
+                            <button
+                              onClick={() => toggleYear(rocYear)}
+                              className={`flex-1 flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-medium transition ${
+                                isYearSelected 
+                                  ? 'bg-blue-600/25 text-blue-300 border border-blue-500/40 font-semibold shadow-sm' 
+                                  : 'text-slate-300 hover:bg-slate-800/60'
+                              }`}
+                            >
+                              <div className="flex items-center gap-1.5">
+                                <span>民國 {rocYear} 年 ({adYear})</span>
+                                {isYearSelected && <IconCheck size={11} className="text-blue-400" />}
+                              </div>
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
+                                isYearSelected ? 'bg-blue-500/30 text-blue-200' : 'bg-slate-800 text-slate-500'
+                              }`}>
+                                {totalInYear}
+                              </span>
+                            </button>
+                          </div>
+
+                          {/* 子月份列表 (多選切換) */}
+                          {isExpanded && (
+                            <div className="pl-4 space-y-0.5 border-l border-slate-800 ml-3">
+                              {months.map(ym => {
+                                const [y, m] = ym.split('-');
+                                const count = allCombinedRecords.filter(r => r.rocYear === y && r.month === m).length;
+                                const isMonthSelected = selectedMonths.includes(ym);
+
+                                return (
+                                  <button
+                                    key={ym}
+                                    onClick={() => toggleMonth(ym)}
+                                    className={`w-full flex items-center justify-between px-2 py-1 rounded-md text-xs transition ${
+                                      isMonthSelected 
+                                        ? 'bg-cyan-600/25 text-cyan-300 font-semibold border border-cyan-500/40 shadow-sm' 
+                                        : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-200'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-1.5">
+                                      <span>{m} 月</span>
+                                      {isMonthSelected && <IconCheck size={10} className="text-cyan-400" />}
+                                    </div>
+                                    <span className={`text-[10px] font-mono ${
+                                      isMonthSelected ? 'text-cyan-300' : 'text-slate-500'
+                                    }`}>{count}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
               </div>
 
               {/* 底部狀態列 */}
-              <div className="p-3 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
+              <div className="p-3 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between flex-shrink-0">
                 <span className="truncate" title={statusMessage}>{statusMessage}</span>
               </div>
 
             </aside>
 
-            {/* 主內容區塊 */}
-            <main className="flex-1 flex flex-col min-w-0 bg-slate-900 overflow-hidden">
+            {/* 主內容區塊 (flex-1 min-w-0 確保卡片和排版自適應不爆版) */}
+            <main className="flex-1 min-w-0 flex flex-col h-full bg-slate-900 overflow-hidden">
               
               {/* 頂部工具列 */}
               <header className="h-16 border-b border-slate-800 px-6 flex items-center justify-between gap-4 bg-slate-900/80 backdrop-blur-md flex-shrink-0">
@@ -945,15 +977,17 @@ function doPost(e) {
                 </div>
               </header>
 
-              {/* 內容區 */}
+              {/* 內容展示區 */}
               <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
                 
                 {/* 狀態標題 Banner */}
-                <div className="bg-slate-800/40 p-4 rounded-2xl border border-slate-800 flex justify-between items-center">
+                <div className="bg-slate-800/40 p-4 rounded-2xl border border-slate-800 flex justify-between items-center flex-wrap gap-3">
                   <div>
                     <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
                       <IconFolder size={18} className="text-blue-400" />
-                      <span>雲端檔案管理總覽</span>
+                      <span>
+                        {hasActiveFilters ? '複合篩選文檔結果' : '全部檔案紀錄清單'}
+                      </span>
                     </h2>
                     <p className="text-xs text-slate-400 mt-1">
                       符合條件的紀錄：<span className="text-blue-400 font-semibold font-mono text-sm">{filteredRecords.length}</span> 筆
@@ -979,7 +1013,7 @@ function doPost(e) {
                 {hasActiveFilters && (
                   <div className="flex flex-wrap items-center gap-2 p-3 bg-slate-800/50 rounded-xl border border-slate-700/60 text-xs">
                     <span className="text-slate-400 text-[11px] font-semibold flex items-center gap-1 mr-1">
-                      <IconFilter size={13} className="text-blue-400" />
+                      <IconFolder size={13} className="text-blue-400" />
                       <span>已套用標籤：</span>
                     </span>
 
@@ -987,15 +1021,15 @@ function doPost(e) {
                     {selectedYears.map(year => (
                       <span key={year} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/40 font-mono text-[11px]">
                         <span>年份: {year}年</span>
-                        <button onClick={() => toggleYear(year)} className="hover:text-white" title="移除標籤"><IconX size={12} /></button>
+                        <button onClick={() => toggleYear(year)} className="hover:text-white" title="移除標籤"><IconX size={11} /></button>
                       </span>
                     ))}
 
                     {/* 指定年月標籤 */}
-                    {selectedYearMonths.map(ym => (
+                    {selectedMonths.map(ym => (
                       <span key={ym} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-mono text-[11px]">
                         <span>年月: {ym}</span>
-                        <button onClick={() => toggleYearMonth(ym)} className="hover:text-white" title="移除標籤"><IconX size={12} /></button>
+                        <button onClick={() => toggleMonth(ym)} className="hover:text-white" title="移除標籤"><IconX size={11} /></button>
                       </span>
                     ))}
 
@@ -1003,7 +1037,7 @@ function doPost(e) {
                     {selectedCategories.map(cat => (
                       <span key={cat} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 text-[11px]">
                         <span>類別: {cat}</span>
-                        <button onClick={() => toggleCategory(cat)} className="hover:text-white" title="移除標籤"><IconX size={12} /></button>
+                        <button onClick={() => toggleCategory(cat)} className="hover:text-white" title="移除標籤"><IconX size={11} /></button>
                       </span>
                     ))}
 
@@ -1011,7 +1045,7 @@ function doPost(e) {
                     {selectedOrgs.map(org => (
                       <span key={org} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px]">
                         <span>機構: {org}</span>
-                        <button onClick={() => toggleOrg(org)} className="hover:text-white" title="移除標籤"><IconX size={12} /></button>
+                        <button onClick={() => toggleOrg(org)} className="hover:text-white" title="移除標籤"><IconX size={11} /></button>
                       </span>
                     ))}
 
@@ -1019,7 +1053,7 @@ function doPost(e) {
                     {starredOnly && (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px]">
                         <span>⭐ 僅星號重點收藏</span>
-                        <button onClick={() => setStarredOnly(false)} className="hover:text-white" title="取消星號篩選"><IconX size={12} /></button>
+                        <button onClick={() => setStarredOnly(false)} className="hover:text-white" title="取消星號篩選"><IconX size={11} /></button>
                       </span>
                     )}
 
@@ -1027,7 +1061,7 @@ function doPost(e) {
                     {searchQuery && (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-700 text-slate-200 border border-slate-600 text-[11px]">
                         <span>關鍵字: "{searchQuery}"</span>
-                        <button onClick={() => setSearchQuery('')} className="hover:text-white" title="清除關鍵字"><IconX size={12} /></button>
+                        <button onClick={() => setSearchQuery('')} className="hover:text-white" title="清除關鍵字"><IconX size={11} /></button>
                       </span>
                     )}
                   </div>
@@ -1062,56 +1096,54 @@ function doPost(e) {
                   </div>
                 )}
 
-                {/* 檔案卡片 Grid (分頁展示) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                {/* 檔案卡片 Grid (加強響應式排版與最小寬度約束，徹底杜絕破版) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                   {pagedRecords.map(item => {
                     const orgColor = getOrgColor(item.org);
 
                     return (
                       <div 
                         key={item.id}
-                        className="bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 hover:border-blue-500/50 rounded-2xl p-4 transition flex flex-col justify-between group shadow-lg"
+                        className="min-w-0 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 hover:border-blue-500/50 rounded-2xl p-4 transition flex flex-col justify-between group shadow-lg overflow-hidden"
                       >
                         <div>
                           {/* 頂部圖示與操作 */}
                           <div className="flex items-start justify-between mb-2.5">
-                            <div className="flex items-center gap-2">
-                              <div className="p-2 bg-slate-900 rounded-xl border border-slate-700/50">
-                                <IconFileText size={20} className="text-red-400" />
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="p-2 bg-slate-900 rounded-xl border border-slate-700/50 flex-shrink-0">
+                                <IconFileText size={18} className="text-red-400" />
                               </div>
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-medium text-white ${orgColor}`}>
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-medium text-white truncate max-w-[130px] ${orgColor}`}>
                                 {item.org}
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-1">
-                              <button 
-                                onClick={(e) => toggleStar(e, item.id)}
-                                title={item.starred ? '取消星號' : '加註星號'}
-                                className={`p-1 transition ${item.starred ? 'text-amber-400' : 'text-slate-500 hover:text-slate-300'}`}
-                              >
-                                <IconStar size={16} fill={item.starred ? '#F59E0B' : 'none'} />
-                              </button>
-                            </div>
+                            <button 
+                              onClick={(e) => toggleStar(e, item.id)}
+                              title={item.starred ? '取消星號' : '加註星號'}
+                              className={`p-1 flex-shrink-0 transition ${item.starred ? 'text-amber-400' : 'text-slate-500 hover:text-slate-300'}`}
+                            >
+                              <IconStar size={16} fill={item.starred ? '#F59E0B' : 'none'} />
+                            </button>
                           </div>
 
                           {/* 檔名 */}
-                          <h3 className="font-semibold text-slate-100 text-xs line-clamp-2 mb-2 group-hover:text-blue-400 transition" title={item.name}>
+                          <h3 className="font-semibold text-slate-100 text-xs line-clamp-2 mb-2 group-hover:text-blue-400 transition break-all" title={item.name}>
                             {item.name}
                           </h3>
 
                           {/* 分類標籤 */}
                           <div className="flex flex-wrap gap-1 mb-2.5">
-                            <span className="px-2 py-0.5 rounded bg-blue-600/20 text-blue-300 border border-blue-500/30 text-[10px]">
+                            <span className="px-2 py-0.5 rounded bg-blue-600/20 text-blue-300 border border-blue-500/30 text-[10px] truncate max-w-full">
                               {item.category}
                             </span>
                             {item.subCategory && (
-                              <span className="px-2 py-0.5 rounded bg-slate-700/60 text-slate-300 text-[10px]">
+                              <span className="px-2 py-0.5 rounded bg-slate-700/60 text-slate-300 text-[10px] truncate max-w-full">
                                 {item.subCategory}
                               </span>
                             )}
                             {item.isCustom && (
-                              <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[9px] border border-emerald-500/30">
+                              <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[9px] border border-emerald-500/30 flex-shrink-0">
                                 新增紀錄
                               </span>
                             )}
@@ -1162,7 +1194,7 @@ function doPost(e) {
 
                 {/* 分頁控制器 */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between border-t border-slate-800 pt-4 pb-2 text-xs">
+                  <div className="flex items-center justify-between border-t border-slate-800 pt-4 pb-2 text-xs flex-wrap gap-2">
                     <div className="text-slate-400">
                       顯示第 <span className="font-mono text-slate-200">{(currentPage - 1) * pageSize + 1}</span> 至{' '}
                       <span className="font-mono text-slate-200">{Math.min(currentPage * pageSize, filteredRecords.length)}</span> 筆 (共 {filteredRecords.length} 筆)

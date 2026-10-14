@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>清福檔案庫 - Google 雲端硬碟與試算表即時同步系統</title>
+    <link rel="icon" type="image/png" href="logo.png">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- React & React DOM CDN -->
@@ -811,8 +812,12 @@ function doPost(e) {
               {/* Header */}
               <div className="p-4 border-b border-slate-800 flex items-center justify-between flex-shrink-0">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-slate-900 border border-slate-800 rounded-xl shadow-md">
-                    <IconGoogleDrive size={22} />
+                  <div className="w-10 h-10 p-1.5 bg-slate-900 border border-slate-800 rounded-xl shadow-md flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    <img 
+                      src="logo.png" 
+                      alt="清福檔案庫 Logo" 
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                   <div>
                     <h1 className="font-bold text-sm text-slate-100 flex items-center gap-1.5">

@@ -67,6 +67,52 @@
         return '本館';
       };
 
+      // 23 個機構專屬「絕不重複」顏色徽章對照表
+      const ORG_COLOR_MAP = {
+        // 本館 (19個獨立色系)
+        '清福': { bg: '#1d4ed8', border: '#3b82f6', text: '#ffffff' }, // 寶石深藍
+        '清氣': { bg: '#059669', border: '#10b981', text: '#ffffff' }, // 翡翠翠綠
+        '清心': { bg: '#e11d48', border: '#f43f5e', text: '#ffffff' }, // 玫瑰艷紅
+        '清平': { bg: '#d97706', border: '#f59e0b', text: '#ffffff' }, // 暖陽琥珀
+        '清安': { bg: '#7c3aed', border: '#8b5cf6', text: '#ffffff' }, // 皇家深紫
+        '清春': { bg: '#65a30d', border: '#84cc16', text: '#ffffff' }, // 嫩芽青檸
+        '清日': { bg: '#ea580c', border: '#f97316', text: '#ffffff' }, // 烈焰金橙
+        '清照': { bg: '#db2777', border: '#ec4899', text: '#ffffff' }, // 洋紅粉晶
+        '清風': { bg: '#0284c7', border: '#38bdf8', text: '#ffffff' }, // 蔚藍天青
+        '清景': { bg: '#4f46e5', border: '#6366f1', text: '#ffffff' }, // 藍靛青紫
+        '清山': { bg: '#0d9488', border: '#14b8a6', text: '#ffffff' }, // 森林松綠
+        '清泉': { bg: '#0891b2', border: '#06b6d4', text: '#ffffff' }, // 冰川水綠
+        '清水': { bg: '#2563eb', border: '#60a5fa', text: '#ffffff' }, // 海洋湛藍
+        '清清': { bg: '#c026d3', border: '#d946ef', text: '#ffffff' }, // 紫羅蘭紅
+        '清涼': { bg: '#16a34a', border: '#22c55e', text: '#ffffff' }, // 清新薄荷
+        '護家': { bg: '#dc2626', border: '#ef4444', text: '#ffffff' }, // 赤紅緋色
+        '本館C棟': { bg: '#b45309', border: '#f59e0b', text: '#ffffff' }, // 古銅黃金
+        '本館全區': { bg: '#475569', border: '#64748b', text: '#ffffff' }, // 沉穩鋼青
+        '含笑': { bg: '#f43f5e', border: '#fb7185', text: '#ffffff' }, // 櫻花柔粉
+
+        // 新館 (4個獨立色系)
+        '一館': { bg: '#099268', border: '#20c997', text: '#ffffff' }, // 曜石碧綠
+        '二館': { bg: '#8b5cf6', border: '#a78bfa', text: '#ffffff' }, // 璀璨亮紫
+        '三館': { bg: '#f59e0b', border: '#fbbf24', text: '#ffffff' }, // 澄黃蜜糖
+        '幼兒園': { bg: '#e8590c', border: '#ff922b', text: '#ffffff' } // 熱情艷橙
+      };
+
+      // 取得機構色彩（絕不重複，動態機構採用黃金比例色相確保唯一）
+      const getOrgColor = (orgName) => {
+        if (!orgName) return { bg: '#64748b', border: '#94a3b8', text: '#ffffff' };
+        const trimmed = orgName.trim();
+        if (ORG_COLOR_MAP[trimmed]) return ORG_COLOR_MAP[trimmed];
+        
+        let hash = 0;
+        for (let i = 0; i < trimmed.length; i++) hash = trimmed.charCodeAt(i) + ((hash << 5) - hash);
+        const hue = Math.abs(hash * 137.508) % 360;
+        return {
+          bg: `hsl(${hue}, 70%, 42%)`,
+          border: `hsl(${hue}, 80%, 65%)`,
+          text: '#ffffff'
+        };
+      };
+
       // 圖示組件
       const IconGoogleDrive = ({ size = 20, className = "" }) => (
         <svg width={size} height={size} viewBox="0 0 87.3 78" className={className}>
@@ -137,19 +183,6 @@
           <polyline points="20 6 9 17 4 12" />
         </svg>
       );
-
-      // 機構色彩池
-      const ORG_COLORS = [
-        'bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500',
-        'bg-purple-500', 'bg-cyan-500', 'bg-indigo-500', 'bg-teal-500',
-        'bg-orange-500', 'bg-fuchsia-500', 'bg-pink-500', 'bg-lime-500'
-      ];
-      const getOrgColor = (orgName) => {
-        if (!orgName) return 'bg-slate-500';
-        let hash = 0;
-        for (let i = 0; i < orgName.length; i++) hash = orgName.charCodeAt(i) + ((hash << 5) - hash);
-        return ORG_COLORS[Math.abs(hash) % ORG_COLORS.length];
-      };
 
       // 解析 Google 試算表 JSONP 資料
       function fetchGoogleSheetData(sheetId, gid) {
@@ -701,7 +734,7 @@ function doPost(e) {
                   <div>
                     <h1 className="font-bold text-sm text-slate-100 flex items-center gap-1.5">
                       <span>文檔智管庫</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-mono">v2.2</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-mono">v2.3</span>
                     </h1>
                     <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5">
                       <span className={`w-2 h-2 rounded-full ${isLoading ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`} />
@@ -858,7 +891,7 @@ function doPost(e) {
                       <div className="space-y-0.5 max-h-44 overflow-y-auto custom-scrollbar pr-1 pt-1 border-t border-slate-800/60">
                         {orgGroupsData.benGuan.map(({ name, count }) => {
                           const isSelected = selectedOrgs.includes(name);
-                          const dotColor = getOrgColor(name);
+                          const colorObj = getOrgColor(name);
 
                           return (
                             <button
@@ -870,8 +903,11 @@ function doPost(e) {
                                   : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
                               }`}
                             >
-                              <div className="flex items-center gap-1.5 truncate">
-                                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotColor}`} />
+                              <div className="flex items-center gap-2 truncate">
+                                <span 
+                                  className="w-2.5 h-2.5 rounded-full flex-shrink-0 border border-white/20 shadow-sm"
+                                  style={{ backgroundColor: colorObj.bg }}
+                                />
                                 <span className="truncate">{name}</span>
                                 {isSelected && <IconCheck size={11} className="text-blue-400 flex-shrink-0" />}
                               </div>
@@ -926,7 +962,7 @@ function doPost(e) {
                       <div className="space-y-0.5 max-h-44 overflow-y-auto custom-scrollbar pr-1 pt-1 border-t border-slate-800/60">
                         {orgGroupsData.xinGuan.map(({ name, count }) => {
                           const isSelected = selectedOrgs.includes(name);
-                          const dotColor = getOrgColor(name);
+                          const colorObj = getOrgColor(name);
 
                           return (
                             <button
@@ -938,8 +974,11 @@ function doPost(e) {
                                   : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
                               }`}
                             >
-                              <div className="flex items-center gap-1.5 truncate">
-                                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotColor}`} />
+                              <div className="flex items-center gap-2 truncate">
+                                <span 
+                                  className="w-2.5 h-2.5 rounded-full flex-shrink-0 border border-white/20 shadow-sm"
+                                  style={{ backgroundColor: colorObj.bg }}
+                                />
                                 <span className="truncate">{name}</span>
                                 {isSelected && <IconCheck size={11} className="text-emerald-400 flex-shrink-0" />}
                               </div>
@@ -1216,14 +1255,23 @@ function doPost(e) {
                       </span>
                     ))}
 
-                    {/* 機構標籤 */}
+                    {/* 機構標籤 (顯示所屬專屬色系) */}
                     {selectedOrgs.map(org => {
                       const grp = getOrgGroup(org);
+                      const colorObj = getOrgColor(org);
                       return (
-                        <span key={org} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px]">
-                          <span className="text-[10px] text-emerald-400 font-mono">[{grp}]</span>
+                        <span 
+                          key={org} 
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-white border shadow-sm"
+                          style={{
+                            backgroundColor: `${colorObj.bg}35`,
+                            borderColor: colorObj.border
+                          }}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full shadow-sm" style={{ backgroundColor: colorObj.bg }} />
+                          <span className="text-[10px] text-slate-300 font-mono">[{grp}]</span>
                           <span>{org}</span>
-                          <button onClick={() => toggleOrg(org)} className="hover:text-white" title="移除標籤"><IconX size={11} /></button>
+                          <button onClick={() => toggleOrg(org)} className="hover:text-red-400 ml-0.5" title="移除標籤"><IconX size={11} /></button>
                         </span>
                       );
                     })}
@@ -1278,7 +1326,7 @@ function doPost(e) {
                 {/* 檔案卡片 Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                   {pagedRecords.map(item => {
-                    const orgColor = getOrgColor(item.org);
+                    const colorObj = getOrgColor(item.org);
                     const grp = item.orgGroup || getOrgGroup(item.org);
 
                     return (
@@ -1287,30 +1335,39 @@ function doPost(e) {
                         className="min-w-0 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 hover:border-blue-500/50 rounded-2xl p-4 transition flex flex-col justify-between group shadow-lg overflow-hidden"
                       >
                         <div>
-                          {/* 頂部圖示、館別與機構標籤 */}
-                          <div className="flex items-start justify-between mb-2.5">
+                          {/* 頂部列：大尺寸清晰機構顏色徽章 + 館別標籤 + 星號 */}
+                          <div className="flex items-center justify-between gap-2 mb-3">
                             <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-                              <div className="p-2 bg-slate-900 rounded-xl border border-slate-700/50 flex-shrink-0">
-                                <IconFileText size={18} className="text-red-400" />
-                              </div>
-                              <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${
+                              {/* 館別標籤 */}
+                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border tracking-wider flex-shrink-0 ${
                                 grp === '本館' 
-                                  ? 'bg-blue-950/60 text-blue-300 border-blue-500/40' 
-                                  : 'bg-emerald-950/60 text-emerald-300 border-emerald-500/40'
+                                  ? 'bg-blue-950/80 text-blue-300 border-blue-500/50' 
+                                  : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50'
                               }`}>
                                 {grp}
                               </span>
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-medium text-white truncate max-w-[110px] ${orgColor}`}>
-                                {item.org}
+
+                              {/* 放大且清晰之機構專屬顏色徽章 */}
+                              <span 
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold text-white tracking-wide border shadow-sm transition-transform group-hover:scale-105 select-text"
+                                style={{
+                                  backgroundColor: colorObj.bg,
+                                  borderColor: colorObj.border,
+                                  boxShadow: `0 2px 8px ${colorObj.bg}50`
+                                }}
+                              >
+                                <span className="w-1.5 h-1.5 rounded-full bg-white opacity-90 shadow-sm flex-shrink-0" />
+                                <span className="truncate max-w-[125px] drop-shadow-sm">{item.org}</span>
                               </span>
                             </div>
 
+                            {/* 星號收藏按鈕 */}
                             <button 
                               onClick={(e) => toggleStar(e, item.id)}
                               title={item.starred ? '取消星號' : '加註星號'}
-                              className={`p-1 flex-shrink-0 transition ${item.starred ? 'text-amber-400' : 'text-slate-500 hover:text-slate-300'}`}
+                              className={`p-1.5 rounded-lg hover:bg-slate-700/60 transition flex-shrink-0 ${item.starred ? 'text-amber-400' : 'text-slate-500 hover:text-slate-300'}`}
                             >
-                              <IconStar size={16} fill={item.starred ? '#F59E0B' : 'none'} />
+                              <IconStar size={17} fill={item.starred ? '#F59E0B' : 'none'} />
                             </button>
                           </div>
 
@@ -1319,7 +1376,7 @@ function doPost(e) {
                             {item.name}
                           </h3>
 
-                          {/* 分類標籤 */}
+                          {/* 分類與子分類標籤 */}
                           <div className="flex flex-wrap gap-1 mb-2.5">
                             <span className="px-2 py-0.5 rounded bg-blue-600/20 text-blue-300 border border-blue-500/30 text-[10px] truncate max-w-full">
                               {item.category}

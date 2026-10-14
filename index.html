@@ -44,6 +44,29 @@
       const DEFAULT_SHEET_ID = "1X5-VXaa-eKAzpvGJZgzODh_hc4uvdVwkcjTFj-UWFG8";
       const DEFAULT_SHEET_GID = "0";
 
+      // 本館與新館機構清單定義
+      const BEN_GUAN_SET = new Set([
+        '清福', '清氣', '清心', '清平', '清安', '清春', '清日', '清照',
+        '清風', '清景', '清山', '清泉', '清水', '清清', '清涼', '護家', '含笑'
+      ]);
+
+      const XIN_GUAN_SET = new Set([
+        '一館', '二館', '三館', '幼兒園'
+      ]);
+
+      // 判斷機構歸屬「本館」或「新館」
+      const getOrgGroup = (orgName) => {
+        if (!orgName) return '本館';
+        const name = orgName.trim();
+        if (XIN_GUAN_SET.has(name) || name.includes('新館')) {
+          return '新館';
+        }
+        if (BEN_GUAN_SET.has(name) || name.includes('本館')) {
+          return '本館';
+        }
+        return '本館';
+      };
+
       // 圖示組件
       const IconGoogleDrive = ({ size = 20, className = "" }) => (
         <svg width={size} height={size} viewBox="0 0 87.3 78" className={className}>
@@ -195,6 +218,7 @@
                   month,
                   adYear,
                   org,
+                  orgGroup: getOrgGroup(org),
                   filePath,
                   uploader,
                   uploadTime,
@@ -252,6 +276,7 @@
         const [starredOnly, setStarredOnly] = useState(false);
         const [searchQuery, setSearchQuery] = useState('');
         const [expandedYears, setExpandedYears] = useState(['115', '114']);
+        const [expandedGroups, setExpandedGroups] = useState({ benGuan: true, xinGuan: true });
 
         // 分頁狀態
         const [currentPage, setCurrentPage] = useState(1);
@@ -316,20 +341,43 @@
           const combined = [...customRecords, ...records];
           return combined.map(item => ({
             ...item,
+            orgGroup: getOrgGroup(item.org),
             starred: starredIds.includes(item.id)
           }));
         }, [records, customRecords, starredIds]);
 
-        // 統計所有機構
-        const orgStats = useMemo(() => {
+        // 機構按「本館」與「新館」分組統計
+        const orgGroupsData = useMemo(() => {
           const map = new Map();
           allCombinedRecords.forEach(r => {
             const org = r.org || '其他';
             map.set(org, (map.get(org) || 0) + 1);
           });
-          return Array.from(map.entries())
-            .map(([name, count]) => ({ name, count }))
-            .sort((a, b) => b.count - a.count);
+
+          const benGuan = [];
+          const xinGuan = [];
+
+          map.forEach((count, name) => {
+            const grp = getOrgGroup(name);
+            if (grp === '新館') {
+              xinGuan.push({ name, count, group: '新館' });
+            } else {
+              benGuan.push({ name, count, group: '本館' });
+            }
+          });
+
+          benGuan.sort((a, b) => b.count - a.count);
+          xinGuan.sort((a, b) => b.count - a.count);
+
+          const benGuanTotal = benGuan.reduce((acc, cur) => acc + cur.count, 0);
+          const xinGuanTotal = xinGuan.reduce((acc, cur) => acc + cur.count, 0);
+
+          return {
+            benGuan,
+            xinGuan,
+            benGuanTotal,
+            xinGuanTotal
+          };
         }, [allCombinedRecords]);
 
         // 統計所有分類
@@ -381,6 +429,21 @@
           setSelectedOrgs(prev => 
             prev.includes(org) ? prev.filter(o => o !== org) : [...prev, org]
           );
+        };
+
+        // 一鍵全選 / 取消全選本館或新館內的所有機構
+        const selectAllInGroup = (groupType) => {
+          const targetList = groupType === '本館' ? orgGroupsData.benGuan : orgGroupsData.xinGuan;
+          const targetOrgNames = targetList.map(o => o.name);
+          const isAllSelected = targetOrgNames.every(name => selectedOrgs.includes(name));
+
+          if (isAllSelected) {
+            // 取消選取該館所有機構
+            setSelectedOrgs(prev => prev.filter(name => !targetOrgNames.includes(name)));
+          } else {
+            // 全選該館所有機構
+            setSelectedOrgs(prev => Array.from(new Set([...prev, ...targetOrgNames])));
+          }
         };
 
         const toggleCategory = (cat) => {
@@ -509,6 +572,7 @@
             month: newRecordForm.month.padStart(2, '0'),
             adYear: String(Number(newRecordForm.rocYear) + 1911),
             org: finalOrg || '護家',
+            orgGroup: getOrgGroup(finalOrg || '護家'),
             filePath: defaultFilePath,
             uploader: newRecordForm.uploader.trim() || 'mis@hok2.com.tw',
             uploadTime: new Date().toISOString(),
@@ -558,7 +622,7 @@
             alert('目前無可匯出的資料！');
             return;
           }
-          const headers = ['檔案ID', '檔案名稱', '檔案分類', '子分類', '檔案年份', '檔案月份', '機構/區域', '上傳檔案', '上傳者', '上傳時間', '下載連結'];
+          const headers = ['檔案ID', '檔案名稱', '檔案分類', '子分類', '檔案年份', '檔案月份', '機構/區域', '館別', '上傳檔案', '上傳者', '上傳時間', '下載連結'];
           const rows = filteredRecords.map(r => [
             `"${r.id || ''}"`,
             `"${(r.name || '').replace(/"/g, '""')}"`,
@@ -567,6 +631,7 @@
             `"${r.rocYear || ''}"`,
             `"${r.month || ''}"`,
             `"${r.org || ''}"`,
+            `"${r.orgGroup || ''}"`,
             `"${(r.filePath || '').replace(/"/g, '""')}"`,
             `"${r.uploader || ''}"`,
             `"${r.uploadTime || ''}"`,
@@ -617,10 +682,14 @@ function doPost(e) {
           });
         };
 
+        // 檢查本館或新館是否全選
+        const isBenGuanAllSelected = orgGroupsData.benGuan.length > 0 && orgGroupsData.benGuan.every(o => selectedOrgs.includes(o.name));
+        const isXinGuanAllSelected = orgGroupsData.xinGuan.length > 0 && orgGroupsData.xinGuan.every(o => selectedOrgs.includes(o.name));
+
         return (
           <div className="flex h-screen w-screen bg-slate-900 text-slate-100 font-sans overflow-hidden">
             
-            {/* 側邊導航列 (固定 320px 寬度，不破版) */}
+            {/* 側邊導航列 (固定 320px 寬度，高雅層級) */}
             <aside className="w-80 min-w-[320px] max-w-[320px] bg-slate-950 border-r border-slate-800 flex flex-col flex-shrink-0 h-full overflow-hidden select-none">
               
               {/* Header */}
@@ -632,7 +701,7 @@ function doPost(e) {
                   <div>
                     <h1 className="font-bold text-sm text-slate-100 flex items-center gap-1.5">
                       <span>文檔智管庫</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-mono">v2.1</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-mono">v2.2</span>
                     </h1>
                     <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5">
                       <span className={`w-2 h-2 rounded-full ${isLoading ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`} />
@@ -733,51 +802,157 @@ function doPost(e) {
                   </button>
                 </div>
 
-                {/* 維度 1：機構 / 區域分類 (多選支援) */}
-                <div>
-                  <div className="px-3 font-semibold text-slate-500 uppercase tracking-wider mb-1.5 text-[10px] flex items-center justify-between">
+                {/* 維度 1：機構 / 區域分類（分組：🏛️ 本館 與 🏢 新館） */}
+                <div className="space-y-2">
+                  <div className="px-3 font-semibold text-slate-500 uppercase tracking-wider text-[10px] flex items-center justify-between">
                     <span className="flex items-center gap-1.5">
                       <IconBuilding size={12} />
-                      <span>機構 / 區域 ({orgStats.length})</span>
+                      <span>機構 / 區域分類</span>
                     </span>
                     {selectedOrgs.length > 0 && (
                       <button 
                         onClick={() => setSelectedOrgs([])}
                         className="text-[10px] text-blue-400 hover:underline"
                       >
-                        清除 ({selectedOrgs.length})
+                        清除機構 ({selectedOrgs.length})
                       </button>
                     )}
                   </div>
 
-                  <div className="space-y-0.5 max-h-48 overflow-y-auto custom-scrollbar pr-1">
-                    {orgStats.map(({ name, count }) => {
-                      const isSelected = selectedOrgs.includes(name);
-                      const dotColor = getOrgColor(name);
+                  {/* 1.1 本館分組卡片 */}
+                  <div className="bg-slate-900/60 rounded-xl p-2 border border-slate-800/80 space-y-1">
+                    <div className="flex items-center justify-between px-1.5 py-1">
+                      <button
+                        onClick={() => setExpandedGroups(prev => ({ ...prev, benGuan: !prev.benGuan }))}
+                        className="flex items-center gap-1.5 text-xs font-bold text-slate-200 hover:text-blue-300 transition"
+                      >
+                        <span className="text-sm">🏛️</span>
+                        <span>本館</span>
+                        <span className="text-[10px] text-slate-400 font-mono font-normal">
+                          ({orgGroupsData.benGuanTotal} 筆 / {orgGroupsData.benGuan.length} 區)
+                        </span>
+                      </button>
 
-                      return (
+                      <div className="flex items-center gap-1">
                         <button
-                          key={name}
-                          onClick={() => toggleOrg(name)}
-                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition ${
-                            isSelected 
-                              ? 'bg-blue-600/20 text-blue-300 border border-blue-500/40 shadow-sm' 
-                              : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-200'
+                          onClick={() => selectAllInGroup('本館')}
+                          title={isBenGuanAllSelected ? '取消全選本館' : '全選本館所有分區'}
+                          className={`text-[10px] px-1.5 py-0.5 rounded transition ${
+                            isBenGuanAllSelected 
+                              ? 'bg-blue-600 text-white font-medium' 
+                              : 'text-blue-400 hover:bg-slate-800'
                           }`}
                         >
-                          <div className="flex items-center gap-2 truncate">
-                            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotColor}`} />
-                            <span className="truncate">{name}</span>
-                            {isSelected && <IconCheck size={11} className="text-blue-400 flex-shrink-0" />}
-                          </div>
-                          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded flex-shrink-0 ${
-                            isSelected ? 'bg-blue-500/30 text-blue-200' : 'bg-slate-900/60 text-slate-500'
-                          }`}>
-                            {count}
-                          </span>
+                          {isBenGuanAllSelected ? '取消全選' : '全選'}
                         </button>
-                      );
-                    })}
+                        <button
+                          onClick={() => setExpandedGroups(prev => ({ ...prev, benGuan: !prev.benGuan }))}
+                          className="text-slate-500 hover:text-slate-300 p-0.5"
+                        >
+                          {expandedGroups.benGuan ? <IconChevronDown size={13} /> : <IconChevronRight size={13} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {expandedGroups.benGuan && (
+                      <div className="space-y-0.5 max-h-44 overflow-y-auto custom-scrollbar pr-1 pt-1 border-t border-slate-800/60">
+                        {orgGroupsData.benGuan.map(({ name, count }) => {
+                          const isSelected = selectedOrgs.includes(name);
+                          const dotColor = getOrgColor(name);
+
+                          return (
+                            <button
+                              key={name}
+                              onClick={() => toggleOrg(name)}
+                              className={`w-full flex items-center justify-between px-2 py-1 rounded-lg text-xs font-medium transition ${
+                                isSelected 
+                                  ? 'bg-blue-600/25 text-blue-300 border border-blue-500/40 shadow-sm' 
+                                  : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                              }`}
+                            >
+                              <div className="flex items-center gap-1.5 truncate">
+                                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotColor}`} />
+                                <span className="truncate">{name}</span>
+                                {isSelected && <IconCheck size={11} className="text-blue-400 flex-shrink-0" />}
+                              </div>
+                              <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded flex-shrink-0 ${
+                                isSelected ? 'bg-blue-500/30 text-blue-200' : 'bg-slate-800 text-slate-500'
+                              }`}>
+                                {count}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 1.2 新館分組卡片 */}
+                  <div className="bg-slate-900/60 rounded-xl p-2 border border-slate-800/80 space-y-1">
+                    <div className="flex items-center justify-between px-1.5 py-1">
+                      <button
+                        onClick={() => setExpandedGroups(prev => ({ ...prev, xinGuan: !prev.xinGuan }))}
+                        className="flex items-center gap-1.5 text-xs font-bold text-slate-200 hover:text-emerald-300 transition"
+                      >
+                        <span className="text-sm">🏢</span>
+                        <span>新館</span>
+                        <span className="text-[10px] text-slate-400 font-mono font-normal">
+                          ({orgGroupsData.xinGuanTotal} 筆 / {orgGroupsData.xinGuan.length} 區)
+                        </span>
+                      </button>
+
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => selectAllInGroup('新館')}
+                          title={isXinGuanAllSelected ? '取消全選新館' : '全選新館所有分區'}
+                          className={`text-[10px] px-1.5 py-0.5 rounded transition ${
+                            isXinGuanAllSelected 
+                              ? 'bg-emerald-600 text-white font-medium' 
+                              : 'text-emerald-400 hover:bg-slate-800'
+                          }`}
+                        >
+                          {isXinGuanAllSelected ? '取消全選' : '全選'}
+                        </button>
+                        <button
+                          onClick={() => setExpandedGroups(prev => ({ ...prev, xinGuan: !prev.xinGuan }))}
+                          className="text-slate-500 hover:text-slate-300 p-0.5"
+                        >
+                          {expandedGroups.xinGuan ? <IconChevronDown size={13} /> : <IconChevronRight size={13} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {expandedGroups.xinGuan && (
+                      <div className="space-y-0.5 max-h-44 overflow-y-auto custom-scrollbar pr-1 pt-1 border-t border-slate-800/60">
+                        {orgGroupsData.xinGuan.map(({ name, count }) => {
+                          const isSelected = selectedOrgs.includes(name);
+                          const dotColor = getOrgColor(name);
+
+                          return (
+                            <button
+                              key={name}
+                              onClick={() => toggleOrg(name)}
+                              className={`w-full flex items-center justify-between px-2 py-1 rounded-lg text-xs font-medium transition ${
+                                isSelected 
+                                  ? 'bg-emerald-600/25 text-emerald-300 border border-emerald-500/40 shadow-sm' 
+                                  : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                              }`}
+                            >
+                              <div className="flex items-center gap-1.5 truncate">
+                                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotColor}`} />
+                                <span className="truncate">{name}</span>
+                                {isSelected && <IconCheck size={11} className="text-emerald-400 flex-shrink-0" />}
+                              </div>
+                              <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded flex-shrink-0 ${
+                                isSelected ? 'bg-emerald-500/30 text-emerald-200' : 'bg-slate-800 text-slate-500'
+                              }`}>
+                                {count}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -986,7 +1161,7 @@ function doPost(e) {
                     <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
                       <IconFolder size={18} className="text-blue-400" />
                       <span>
-                        {hasActiveFilters ? '複合篩選文檔結果' : '全部檔案紀錄清單'}
+                        {hasActiveFilters ? '複合標籤篩選文檔結果' : '全部檔案紀錄清單'}
                       </span>
                     </h2>
                     <p className="text-xs text-slate-400 mt-1">
@@ -1042,12 +1217,16 @@ function doPost(e) {
                     ))}
 
                     {/* 機構標籤 */}
-                    {selectedOrgs.map(org => (
-                      <span key={org} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px]">
-                        <span>機構: {org}</span>
-                        <button onClick={() => toggleOrg(org)} className="hover:text-white" title="移除標籤"><IconX size={11} /></button>
-                      </span>
-                    ))}
+                    {selectedOrgs.map(org => {
+                      const grp = getOrgGroup(org);
+                      return (
+                        <span key={org} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px]">
+                          <span className="text-[10px] text-emerald-400 font-mono">[{grp}]</span>
+                          <span>{org}</span>
+                          <button onClick={() => toggleOrg(org)} className="hover:text-white" title="移除標籤"><IconX size={11} /></button>
+                        </span>
+                      );
+                    })}
 
                     {/* 星號收藏標籤 */}
                     {starredOnly && (
@@ -1096,10 +1275,11 @@ function doPost(e) {
                   </div>
                 )}
 
-                {/* 檔案卡片 Grid (加強響應式排版與最小寬度約束，徹底杜絕破版) */}
+                {/* 檔案卡片 Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                   {pagedRecords.map(item => {
                     const orgColor = getOrgColor(item.org);
+                    const grp = item.orgGroup || getOrgGroup(item.org);
 
                     return (
                       <div 
@@ -1107,13 +1287,20 @@ function doPost(e) {
                         className="min-w-0 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 hover:border-blue-500/50 rounded-2xl p-4 transition flex flex-col justify-between group shadow-lg overflow-hidden"
                       >
                         <div>
-                          {/* 頂部圖示與操作 */}
+                          {/* 頂部圖示、館別與機構標籤 */}
                           <div className="flex items-start justify-between mb-2.5">
-                            <div className="flex items-center gap-2 min-w-0">
+                            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
                               <div className="p-2 bg-slate-900 rounded-xl border border-slate-700/50 flex-shrink-0">
                                 <IconFileText size={18} className="text-red-400" />
                               </div>
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-medium text-white truncate max-w-[130px] ${orgColor}`}>
+                              <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${
+                                grp === '本館' 
+                                  ? 'bg-blue-950/60 text-blue-300 border-blue-500/40' 
+                                  : 'bg-emerald-950/60 text-emerald-300 border-emerald-500/40'
+                              }`}>
+                                {grp}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-medium text-white truncate max-w-[110px] ${orgColor}`}>
                                 {item.org}
                               </span>
                             </div>
@@ -1275,9 +1462,16 @@ function doPost(e) {
                           onChange={(e) => setNewRecordForm({ ...newRecordForm, org: e.target.value })}
                           className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500"
                         >
-                          {orgStats.map(o => (
-                            <option key={o.name} value={o.name}>{o.name}</option>
-                          ))}
+                          <optgroup label="🏛️ 本館">
+                            {orgGroupsData.benGuan.map(o => (
+                              <option key={o.name} value={o.name}>{o.name}</option>
+                            ))}
+                          </optgroup>
+                          <optgroup label="🏢 新館">
+                            {orgGroupsData.xinGuan.map(o => (
+                              <option key={o.name} value={o.name}>{o.name}</option>
+                            ))}
+                          </optgroup>
                           <option value="__custom__">+ 自訂新機構...</option>
                         </select>
                         {newRecordForm.org === '__custom__' && (

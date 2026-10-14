@@ -802,25 +802,15 @@ function doPost(e) {
               </div>
 
               {/* 快捷操作按鈕群 */}
-              <div className="p-3 border-b border-slate-800/60 space-y-2 flex-shrink-0">
+              <div className="p-3 border-b border-slate-800/60 flex-shrink-0">
                 <button
-                  onClick={() => setIsAddModalOpen(true)}
-                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium py-2 px-3 rounded-xl transition text-xs shadow-md shadow-blue-500/20 active:scale-95"
+                  onClick={() => loadSheetRecords(sheetId, sheetGid)}
+                  disabled={isLoading}
+                  className="w-full flex items-center justify-center gap-1.5 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 py-2 px-3 rounded-xl text-xs text-slate-200 hover:text-white transition font-medium shadow-sm"
                 >
-                  <IconPlus size={16} />
-                  <span>建立新檔案紀錄</span>
+                  <IconRefresh size={14} className={isLoading ? 'animate-spin' : ''} />
+                  <span>{isLoading ? '同步中...' : '重新抓取試算表'}</span>
                 </button>
-
-                <div>
-                  <button
-                    onClick={() => loadSheetRecords(sheetId, sheetGid)}
-                    disabled={isLoading}
-                    className="w-full flex items-center justify-center gap-1.5 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 py-1.5 px-2 rounded-lg text-[11px] text-slate-300 transition"
-                  >
-                    <IconRefresh size={13} className={isLoading ? 'animate-spin' : ''} />
-                    <span>{isLoading ? '同步中' : '重新抓取試算表'}</span>
-                  </button>
-                </div>
               </div>
 
               {/* 導覽與多選標籤樹狀選單 */}
@@ -1394,18 +1384,12 @@ function doPost(e) {
                 {!isLoading && filteredRecords.length === 0 && (
                   <div className="bg-slate-800/20 border border-slate-800 rounded-2xl p-12 text-center space-y-3">
                     <p className="text-slate-400 text-sm">找不到同時符合當前標籤條件的檔案紀錄</p>
-                    <div className="flex items-center justify-center gap-3">
+                    <div className="flex items-center justify-center">
                       <button
                         onClick={clearAllFilters}
-                        className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium transition"
+                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium transition"
                       >
                         清除所有標籤篩選
-                      </button>
-                      <button
-                        onClick={() => setIsAddModalOpen(true)}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-medium transition"
-                      >
-                        ➕ 立即建立這筆紀錄
                       </button>
                     </div>
                   </div>

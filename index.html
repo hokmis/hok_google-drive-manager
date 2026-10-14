@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文檔智管庫 - Google 雲端硬碟即時同步系統</title>
+    <title>文檔智管庫 - Google 雲端硬碟與試算表即時同步系統</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- React & React DOM CDN -->
@@ -11,9 +11,6 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <!-- Babel for JSX Compilation in Browser -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Google Identity Services (GIS) & Google API Client (GAPI) -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://apis.google.com/js/api.js" async defer></script>
     <style>
       .custom-scrollbar::-webkit-scrollbar {
         width: 6px;
@@ -38,6 +35,10 @@
     <script type="text/babel">
       const { useState, useMemo, useEffect, useRef } = React;
 
+      // 預設試算表設定
+      const DEFAULT_SHEET_ID = "1X5-VXaa-eKAzpvGJZgzODh_hc4uvdVwkcjTFj-UWFG8";
+      const DEFAULT_SHEET_GID = "0";
+
       // 圖示組件
       const IconGoogleDrive = ({ size = 20, className = "" }) => (
         <svg width={size} height={size} viewBox="0 0 87.3 78" className={className}>
@@ -49,32 +50,35 @@
           <path d="m73.55 76.8-13.75-23.8H27.5L13.75 76.8c1.35.8 2.9 1.2 4.45 1.2h50.9c1.55 0 3.1-.4 4.45-1.2z" fill="#ffba00"/>
         </svg>
       );
+      const IconSheets = ({ size = 18, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+          <line x1="3" x2="21" y1="9" y2="9"/>
+          <line x1="3" x2="21" y1="15" y2="15"/>
+          <line x1="9" x2="9" y1="3" y2="21"/>
+          <line x1="15" x2="15" y1="3" y2="21"/>
+        </svg>
+      );
       const IconFolder = ({ size = 18, className = "" }) => (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L8.6 3.3A2 2 0 0 0 6.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
+      );
+      const IconBuilding = ({ size = 18, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
       );
       const IconFileText = ({ size = 18, className = "" }) => (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
       );
-      const IconSpreadsheet = ({ size = 18, className = "" }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 13h8"/><path d="M8 17h8"/><path d="M12 9v12"/></svg>
-      );
-      const IconImage = ({ size = 18, className = "" }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-      );
-      const IconPresentation = ({ size = 18, className = "" }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="m7 21 5-5 5 5"/></svg>
-      );
       const IconStar = ({ size = 18, className = "", fill = "none" }) => (
         <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      );
-      const IconTrash = ({ size = 18, className = "" }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
       );
       const IconSearch = ({ size = 18, className = "" }) => (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
       );
       const IconExternalLink = ({ size = 18, className = "" }) => (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
+      );
+      const IconDownload = ({ size = 18, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
       );
       const IconChevronRight = ({ size = 18, className = "" }) => (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m9 18 6-6-6-6"/></svg>
@@ -88,413 +92,664 @@
       const IconRefresh = ({ size = 18, className = "" }) => (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
       );
+      const IconPlus = ({ size = 18, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      );
+      const IconSettings = ({ size = 18, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      );
       const IconX = ({ size = 18, className = "" }) => (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
       );
+      const IconTag = ({ size = 18, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r=".5" fill="currentColor"/></svg>
+      );
 
-      // 模擬 Google Drive 抓回的檔案清單 (含有 Google 格式、修改時間、資料夾 parent 與預覽連結)
-      const MOCK_DRIVE_FILES = [
-        {
-          id: 'gdrive_doc_1',
-          name: '2026_Q3_業務拓展策略規劃書',
-          mimeType: 'application/vnd.google-apps.document',
-          modifiedTime: '2026-08-04T09:30:00.000Z',
-          size: '342000',
-          folderName: '市場策略專案',
-          folderId: 'folder_market',
-          starred: true,
-          webViewLink: 'https://docs.google.com',
-          iconType: 'doc',
-          author: 'Alex Chen',
-          description: '包含 2026 下半年度亞太市場拓展目標與行銷預算配比。'
-        },
-        {
-          id: 'gdrive_sheet_1',
-          name: '2026_年度財務預算及支出即時追蹤表',
-          mimeType: 'application/vnd.google-apps.spreadsheet',
-          modifiedTime: '2026-07-25T14:10:00.000Z',
-          size: '1580000',
-          folderName: '財務審核部門',
-          folderId: 'folder_finance',
-          starred: true,
-          webViewLink: 'https://sheets.google.com',
-          iconType: 'sheet',
-          author: 'Sarah Lin',
-          description: '每月人事、伺服器雲端運算與日常運營支出彙總統計。'
-        },
-        {
-          id: 'gdrive_slide_1',
-          name: 'AI 智慧產品架構發表會 Keynote',
-          mimeType: 'application/vnd.google-apps.presentation',
-          modifiedTime: '2026-07-12T16:45:00.000Z',
-          size: '12400000',
-          folderName: '研發核心專案',
-          folderId: 'folder_dev',
-          starred: false,
-          webViewLink: 'https://slides.google.com',
-          iconType: 'slide',
-          author: 'David Wu',
-          description: '向投資人與客戶展示之 AI 架構與多模態模型運算流程。'
-        },
-        {
-          id: 'gdrive_pdf_1',
-          name: '2026_公司規章制度與員工手冊_v3.pdf',
-          mimeType: 'application/pdf',
-          modifiedTime: '2026-06-18T08:20:00.000Z',
-          size: '4200000',
-          folderName: '市場策略專案',
-          folderId: 'folder_market',
-          starred: false,
-          webViewLink: 'https://drive.google.com',
-          iconType: 'pdf',
-          author: 'HR Team',
-          description: '員工福利、請假制度以及資安合規政策指引。'
-        },
-        {
-          id: 'gdrive_img_1',
-          name: '2026_品牌 Logo 視覺設計稿_高解析度.png',
-          mimeType: 'image/png',
-          modifiedTime: '2026-06-02T11:00:00.000Z',
-          size: '8900000',
-          folderName: '設計視覺專案',
-          folderId: 'folder_design',
-          starred: true,
-          webViewLink: 'https://drive.google.com',
-          iconType: 'image',
-          author: 'Elena Chang',
-          description: '向量匯出圖檔，包含深色與淺色背景的標準企業標誌。'
-        },
-        {
-          id: 'gdrive_sheet_2',
-          name: '2025_Q4_稅務結算清單.xlsx',
-          mimeType: 'application/vnd.google-apps.spreadsheet',
-          modifiedTime: '2025-12-28T10:15:00.000Z',
-          size: '2300000',
-          folderName: '財務審核部門',
-          folderId: 'folder_finance',
-          starred: false,
-          webViewLink: 'https://sheets.google.com',
-          iconType: 'sheet',
-          author: 'Sarah Lin',
-          description: '2025 年度第四季各部門銷項與進項發票彙整。'
-        }
+      // 機構色彩池
+      const ORG_COLORS = [
+        'bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500',
+        'bg-purple-500', 'bg-cyan-500', 'bg-indigo-500', 'bg-teal-500',
+        'bg-orange-500', 'bg-fuchsia-500', 'bg-pink-500', 'bg-lime-500'
       ];
+      const getOrgColor = (orgName) => {
+        if (!orgName) return 'bg-slate-500';
+        let hash = 0;
+        for (let i = 0; i < orgName.length; i++) hash = orgName.charCodeAt(i) + ((hash << 5) - hash);
+        return ORG_COLORS[Math.abs(hash) % ORG_COLORS.length];
+      };
+
+      // 解析 Google 試算表 JSONP 資料
+      function fetchGoogleSheetData(sheetId, gid) {
+        return new Promise((resolve, reject) => {
+          const callbackName = 'sheetCallback_' + Math.floor(Math.random() * 10000000);
+          const script = document.createElement('script');
+          const timeout = setTimeout(() => {
+            cleanup();
+            reject(new Error('讀取 Google 試算表逾時 (15s)，請確認網路連線或權限'));
+          }, 15000);
+
+          function cleanup() {
+            clearTimeout(timeout);
+            delete window[callbackName];
+            if (script.parentNode) script.parentNode.removeChild(script);
+          }
+
+          window[callbackName] = function(data) {
+            cleanup();
+            if (data && data.table && data.table.rows) {
+              const rows = data.table.rows;
+              // 欄位依序：檔案ID, 檔案名稱, 檔案分類, 子分類, 檔案年份, 檔案月份, 機構/區域, 上傳檔案, 上傳者, 上傳時間, 下載連結
+              const parsed = rows.map((r, index) => {
+                const c = r.c || [];
+                const getVal = (idx) => {
+                  if (!c[idx]) return '';
+                  return c[idx].v !== null && c[idx].v !== undefined ? String(c[idx].v).trim() : '';
+                };
+
+                const fileId = getVal(0) || `record_${index + 1}`;
+                const name = getVal(1) || '未命名檔案';
+                const category = getVal(2) || '其他分類';
+                const subCategory = getVal(3) || '';
+                const rawRocYear = getVal(4) || '115';
+                const rocYear = rawRocYear.includes('.') ? String(Math.floor(Number(rawRocYear))) : rawRocYear;
+                const rawMonth = getVal(5) || '01';
+                const month = rawMonth.padStart(2, '0');
+                const org = getVal(6) || '未指定機構';
+                const filePath = getVal(7) || '';
+                const uploader = getVal(8) || '系統上傳';
+                const uploadTime = getVal(9) || '';
+                const downloadUrl = getVal(10) || '';
+
+                // 推算西元年
+                const adYear = Number(rocYear) ? String(Number(rocYear) + 1911) : '2026';
+                const modifiedTime = `${adYear}-${month}-01`;
+
+                // 從下載連結提取 Google Drive 檔案 ID
+                let driveId = '';
+                const idMatch = downloadUrl.match(/id=([a-zA-Z0-9_-]+)/);
+                if (idMatch) {
+                  driveId = idMatch[1];
+                }
+
+                // 產生預覽連結
+                const viewUrl = driveId 
+                  ? `https://drive.google.com/file/d/${driveId}/view` 
+                  : (downloadUrl || 'https://drive.google.com');
+
+                return {
+                  id: fileId,
+                  name,
+                  category,
+                  subCategory,
+                  rocYear,
+                  month,
+                  adYear,
+                  org,
+                  filePath,
+                  uploader,
+                  uploadTime,
+                  downloadUrl,
+                  viewUrl,
+                  driveId,
+                  modifiedTime,
+                  isCustom: false
+                };
+              });
+              resolve(parsed);
+            } else {
+              reject(new Error('試算表格式不符合或資料為空'));
+            }
+          };
+
+          script.src = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=responseHandler:${callbackName}&gid=${gid}`;
+          script.onerror = () => {
+            cleanup();
+            reject(new Error('無法載入 Google 試算表，請確認該試算表已開啟「知道連結的使用者皆可檢視」'));
+          };
+          document.body.appendChild(script);
+        });
+      }
 
       function App() {
-        const [driveFiles, setDriveFiles] = useState(MOCK_DRIVE_FILES);
-        const [isConnected, setIsConnected] = useState(false);
-        const [authMode, setAuthMode] = useState('demo'); // 'demo' | 'live'
-        const [userProfile, setUserProfile] = useState({ name: 'Google Drive 體驗用戶', email: 'user@gmail.com' });
+        const [sheetId, setSheetId] = useState(() => localStorage.getItem('hok_sheet_id') || DEFAULT_SHEET_ID);
+        const [sheetGid, setSheetGid] = useState(() => localStorage.getItem('hok_sheet_gid') || DEFAULT_SHEET_GID);
+        const [webhookUrl, setWebhookUrl] = useState(() => localStorage.getItem('hok_apps_script_url') || '');
+
+        const [records, setRecords] = useState([]);
+        const [isLoading, setIsLoading] = useState(true);
+        const [lastSyncTime, setLastSyncTime] = useState('');
+        const [statusMessage, setStatusMessage] = useState('正在從 Google 試算表讀取資料...');
         
+        // 收藏星號列表 (保存在 localStorage)
+        const [starredIds, setStarredIds] = useState(() => {
+          try {
+            return JSON.parse(localStorage.getItem('hok_starred_ids') || '[]');
+          } catch(e) { return []; }
+        });
+
+        // 本機新增的自訂紀錄 (保存在 localStorage)
+        const [customRecords, setCustomRecords] = useState(() => {
+          try {
+            return JSON.parse(localStorage.getItem('hok_custom_records') || '[]');
+          } catch(e) { return []; }
+        });
+
         // 導覽狀態
-        const [activeTab, setActiveTab] = useState('all'); // 'all', 'starred', 'trash', 'folder', 'date'
-        const [selectedFolderId, setSelectedFolderId] = useState(null);
+        const [activeTab, setActiveTab] = useState('all'); // 'all', 'starred', 'org', 'category', 'date'
+        const [selectedOrg, setSelectedOrg] = useState(null);
+        const [selectedCategory, setSelectedCategory] = useState(null);
+        const [selectedSubCategory, setSelectedSubCategory] = useState(null);
         const [selectedYearMonth, setSelectedYearMonth] = useState(null);
         const [searchQuery, setSearchQuery] = useState('');
-        const [expandedYears, setExpandedYears] = useState(['2026', '2025']);
+        const [expandedYears, setExpandedYears] = useState(['115', '114']);
 
-        // Google Cloud API 設定彈窗
-        const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
-        const [clientId, setClientId] = useState('');
-        const [apiKey, setApiKey] = useState('');
-        const [statusMessage, setStatusMessage] = useState('目前運行於 Google Drive 模擬讀取模式');
-        const [isSyncing, setIsSyncing] = useState(false);
+        // 分頁狀態
+        const [currentPage, setCurrentPage] = useState(1);
+        const pageSize = 24;
 
-        // 格式化容量大小
-        const formatBytes = (bytes) => {
-          if (!bytes || bytes === '0') return '0 Bytes';
-          const k = 1024;
-          const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-          const i = Math.floor(Math.log(Number(bytes)) / Math.log(k));
-          return parseFloat((Number(bytes) / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        // Modal 狀態
+        const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+        const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+        const [copySuccess, setCopySuccess] = useState(false);
+
+        // 新增紀錄表單狀態
+        const [newRecordForm, setNewRecordForm] = useState({
+          name: '',
+          org: '護家',
+          category: '消毒資料',
+          subCategory: '消毒照片',
+          rocYear: '115',
+          month: '06',
+          uploader: 'mis@hok2.com.tw',
+          driveLinkOrId: '',
+          customOrg: '',
+          customCategory: ''
+        });
+        const [isSubmitting, setIsSubmitting] = useState(false);
+
+        // 初始載入
+        useEffect(() => {
+          loadSheetRecords(sheetId, sheetGid);
+        }, []);
+
+        // 監聽收藏儲存
+        useEffect(() => {
+          localStorage.setItem('hok_starred_ids', JSON.stringify(starredIds));
+        }, [starredIds]);
+
+        // 監聽自訂紀錄儲存
+        useEffect(() => {
+          localStorage.setItem('hok_custom_records', JSON.stringify(customRecords));
+        }, [customRecords]);
+
+        // 載入 Google 試算表紀錄
+        const loadSheetRecords = async (targetId, targetGid) => {
+          setIsLoading(true);
+          setStatusMessage('正在讀取 Google 試算表資料...');
+          try {
+            const data = await fetchGoogleSheetData(targetId, targetGid);
+            setRecords(data);
+            const now = new Date();
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+            setLastSyncTime(timeStr);
+            setStatusMessage(`成功同步 ${data.length} 筆試算表紀錄 (最後同步: ${timeStr})`);
+          } catch (err) {
+            console.error('Fetch error:', err);
+            setStatusMessage(`讀取失敗: ${err.message}`);
+          } finally {
+            setIsLoading(false);
+          }
         };
 
-        // 格式化日期為 YYYY-MM-DD
-        const formatDate = (isoString) => {
-          if (!isoString) return '';
-          return isoString.split('T')[0];
-        };
+        // 合併試算表資料與本機新增紀錄
+        const allCombinedRecords = useMemo(() => {
+          const combined = [...customRecords, ...records];
+          return combined.map(item => ({
+            ...item,
+            starred: starredIds.includes(item.id)
+          }));
+        }, [records, customRecords, starredIds]);
 
-        // 自動由 Google Drive 的 modifiedTime 解析年月份樹狀結構
+        // 統計所有機構
+        const orgStats = useMemo(() => {
+          const map = new Map();
+          allCombinedRecords.forEach(r => {
+            const org = r.org || '其他';
+            map.set(org, (map.get(org) || 0) + 1);
+          });
+          return Array.from(map.entries())
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => b.count - a.count);
+        }, [allCombinedRecords]);
+
+        // 統計所有分類
+        const categoryStats = useMemo(() => {
+          const map = new Map();
+          allCombinedRecords.forEach(r => {
+            const cat = r.category || '未分類';
+            map.set(cat, (map.get(cat) || 0) + 1);
+          });
+          return Array.from(map.entries())
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => b.count - a.count);
+        }, [allCombinedRecords]);
+
+        // 統計年月份樹狀結構
         const yearMonthTree = useMemo(() => {
           const tree = {};
-          driveFiles.forEach(file => {
-            const dateStr = formatDate(file.modifiedTime);
-            const [year, month] = dateStr.split('-');
-            const ym = `${year}-${month}`;
-            if (!tree[year]) tree[year] = new Set();
-            tree[year].add(ym);
+          allCombinedRecords.forEach(r => {
+            const rocY = r.rocYear || '115';
+            const m = r.month || '01';
+            const ymKey = `${rocY}-${m}`;
+            if (!tree[rocY]) tree[rocY] = new Set();
+            tree[rocY].add(ymKey);
           });
 
           return Object.keys(tree)
-            .sort((a, b) => b.localeCompare(a))
-            .map(year => ({
-              year,
-              months: Array.from(tree[year]).sort((a, b) => b.localeCompare(a))
+            .sort((a, b) => Number(b) - Number(a))
+            .map(rocYear => ({
+              rocYear,
+              adYear: String(Number(rocYear) + 1911),
+              months: Array.from(tree[rocYear]).sort((a, b) => b.localeCompare(a))
             }));
-        }, [driveFiles]);
+        }, [allCombinedRecords]);
 
-        // 自動提取 Google Drive 上的資料夾分類 (Projects)
-        const folders = useMemo(() => {
-          const map = new Map();
-          driveFiles.forEach(file => {
-            if (file.folderId && !map.has(file.folderId)) {
-              map.set(file.folderId, {
-                id: file.folderId,
-                name: file.folderName || '一般雲端資料夾',
-                color: file.folderId.includes('market') ? 'bg-blue-500' :
-                       file.folderId.includes('finance') ? 'bg-amber-500' :
-                       file.folderId.includes('dev') ? 'bg-emerald-500' : 'bg-purple-500'
-              });
+        // 篩選檔案清單
+        const filteredRecords = useMemo(() => {
+          return allCombinedRecords.filter(item => {
+            // 關鍵字檢索
+            if (searchQuery.trim() !== '') {
+              const q = searchQuery.toLowerCase();
+              const match = (item.name && item.name.toLowerCase().includes(q)) ||
+                            (item.org && item.org.toLowerCase().includes(q)) ||
+                            (item.category && item.category.toLowerCase().includes(q)) ||
+                            (item.subCategory && item.subCategory.toLowerCase().includes(q)) ||
+                            (item.uploader && item.uploader.toLowerCase().includes(q)) ||
+                            (item.filePath && item.filePath.toLowerCase().includes(q));
+              if (!match) return false;
             }
-          });
-          return Array.from(map.values());
-        }, [driveFiles]);
 
-        // 切換展開年份
-        const toggleYearExpand = (year) => {
-          setExpandedYears(prev => prev.includes(year) ? prev.filter(y => y !== year) : [...prev, year]);
-        };
-
-        // 依類型產生 Google 圖示
-        const renderDriveIcon = (mimeType, size = 20) => {
-          if (mimeType.includes('document')) return <IconFileText size={size} className="text-blue-400" />;
-          if (mimeType.includes('spreadsheet')) return <IconSpreadsheet size={size} className="text-emerald-400" />;
-          if (mimeType.includes('presentation')) return <IconPresentation size={size} className="text-amber-400" />;
-          if (mimeType.includes('image')) return <IconImage size={size} className="text-purple-400" />;
-          return <IconFileText size={size} className="text-slate-400" />;
-        };
-
-        // 真實連接 Google Drive API
-        const handleConnectGoogleDrive = () => {
-          if (!clientId) {
-            setIsConfigModalOpen(true);
-            return;
-          }
-
-          if (typeof google === 'undefined' || !google.accounts) {
-            alert('Google Identity Services 正在加載中，請稍候重試。');
-            return;
-          }
-
-          try {
-            const tokenClient = google.accounts.oauth2.initTokenClient({
-              client_id: clientId,
-              scope: 'https://www.googleapis.com/auth/drive.readonly',
-              callback: async (tokenResponse) => {
-                if (tokenResponse && tokenResponse.access_token) {
-                  setIsConnected(true);
-                  setAuthMode('live');
-                  setStatusMessage('已成功授權連線至您的 Google Drive');
-                  setIsConfigModalOpen(false);
-                  fetchRealDriveFiles(tokenResponse.access_token);
-                }
-              },
-            });
-            tokenClient.requestAccessToken();
-          } catch (err) {
-            console.error('Google Auth Error:', err);
-            alert('連線失敗，請檢查 Client ID 是否正確且授權來源包含此網頁。');
-          }
-        };
-
-        // 呼叫 Google Drive API v3 獲取真實檔案
-        const fetchRealDriveFiles = async (accessToken) => {
-          setIsSyncing(true);
-          try {
-            const res = await fetch(
-              'https://www.googleapis.com/drive/v3/files?pageSize=100&fields=files(id,name,mimeType,modifiedTime,size,starred,webViewLink,parents,owners)&q=trashed=false',
-              { headers: { Authorization: `Bearer ${accessToken}` } }
-            );
-            const data = await res.json();
-            if (data.files) {
-              const mapped = data.files.map(f => ({
-                id: f.id,
-                name: f.name,
-                mimeType: f.mimeType,
-                modifiedTime: f.modifiedTime,
-                size: f.size || '102400',
-                folderName: '我的雲端硬碟',
-                folderId: f.parents ? f.parents[0] : 'root',
-                starred: f.starred || false,
-                webViewLink: f.webViewLink || `https://drive.google.com/file/d/${f.id}/view`,
-                author: f.owners?.[0]?.displayName || '我',
-                description: `Google Drive 雲端檔案 (格式: ${f.mimeType.split('.').pop()})`
-              }));
-              setDriveFiles(mapped);
-              setStatusMessage(`已從 Google 雲端硬碟同步 ${mapped.length} 個檔案！`);
+            // 分頁視圖條件
+            if (activeTab === 'starred') return item.starred;
+            if (activeTab === 'org' && selectedOrg) return item.org === selectedOrg;
+            if (activeTab === 'category' && selectedCategory) {
+              if (item.category !== selectedCategory) return false;
+              if (selectedSubCategory && item.subCategory !== selectedSubCategory) return false;
+              return true;
             }
-          } catch (err) {
-            console.error('Fetch Drive Files Error:', err);
-            setStatusMessage('讀取 Google Drive 檔案失敗，切換回快取資料。');
-          } finally {
-            setIsSyncing(false);
-          }
-        };
-
-        // 切換標星
-        const toggleStar = (e, id) => {
-          e.stopPropagation();
-          setDriveFiles(prev => prev.map(f => f.id === id ? { ...f, starred: !f.starred } : f));
-        };
-
-        const filteredFiles = useMemo(() => {
-          return driveFiles.filter(file => {
-            const matchesSearch = searchQuery === '' || 
-              file.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              file.folderName.toLowerCase().includes(searchQuery.toLowerCase());
-
-            if (!matchesSearch) return false;
-
-            if (activeTab === 'starred') return file.starred;
-            if (activeTab === 'folder' && selectedFolderId) return file.folderId === selectedFolderId;
-            if (activeTab === 'date' && selectedYearMonth) return formatDate(file.modifiedTime).startsWith(selectedYearMonth);
+            if (activeTab === 'date' && selectedYearMonth) {
+              const [y, m] = selectedYearMonth.split('-');
+              return item.rocYear === y && item.month === m;
+            }
 
             return true;
-          }).sort((a, b) => new Date(b.modifiedTime) - new Date(a.modifiedTime));
-        }, [driveFiles, activeTab, selectedFolderId, selectedYearMonth, searchQuery]);
+          });
+        }, [allCombinedRecords, searchQuery, activeTab, selectedOrg, selectedCategory, selectedSubCategory, selectedYearMonth]);
+
+        // 每次篩選條件改變時重設頁碼至第一頁
+        useEffect(() => {
+          setCurrentPage(1);
+        }, [searchQuery, activeTab, selectedOrg, selectedCategory, selectedSubCategory, selectedYearMonth]);
+
+        // 分頁資料
+        const totalPages = Math.ceil(filteredRecords.length / pageSize) || 1;
+        const pagedRecords = useMemo(() => {
+          const start = (currentPage - 1) * pageSize;
+          return filteredRecords.slice(start, start + pageSize);
+        }, [filteredRecords, currentPage]);
+
+        // 切換星號收藏
+        const toggleStar = (e, id) => {
+          e.stopPropagation();
+          setStarredIds(prev => 
+            prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+          );
+        };
+
+        // 建立新紀錄處理
+        const handleCreateRecord = async (e) => {
+          e.preventDefault();
+          if (!newRecordForm.name.trim()) {
+            alert('請填寫檔案名稱！');
+            return;
+          }
+
+          setIsSubmitting(true);
+          const finalOrg = newRecordForm.org === '__custom__' ? newRecordForm.customOrg.trim() : newRecordForm.org;
+          const finalCategory = newRecordForm.category === '__custom__' ? newRecordForm.customCategory.trim() : newRecordForm.category;
+          const randomId = Math.random().toString(36).substring(2, 10);
+          
+          let driveId = '';
+          let downloadUrl = newRecordForm.driveLinkOrId.trim();
+          if (downloadUrl) {
+            const match = downloadUrl.match(/id=([a-zA-Z0-9_-]+)/) || downloadUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (match) driveId = match[1];
+            else if (!downloadUrl.includes('/') && downloadUrl.length > 15) driveId = downloadUrl;
+          }
+
+          if (driveId && !downloadUrl.startsWith('http')) {
+            downloadUrl = `https://drive.google.com/uc?export=download&id=${driveId}`;
+          }
+
+          const viewUrl = driveId ? `https://drive.google.com/file/d/${driveId}/view` : downloadUrl || 'https://drive.google.com';
+          const defaultFilePath = `${finalCategory}/${newRecordForm.subCategory}/${newRecordForm.rocYear}/${newRecordForm.month}/${newRecordForm.name}.pdf`;
+
+          const createdItem = {
+            id: randomId,
+            name: newRecordForm.name.trim(),
+            category: finalCategory || '消毒資料',
+            subCategory: newRecordForm.subCategory.trim(),
+            rocYear: newRecordForm.rocYear,
+            month: newRecordForm.month.padStart(2, '0'),
+            adYear: String(Number(newRecordForm.rocYear) + 1911),
+            org: finalOrg || '護家',
+            filePath: defaultFilePath,
+            uploader: newRecordForm.uploader.trim() || 'mis@hok2.com.tw',
+            uploadTime: new Date().toISOString(),
+            downloadUrl,
+            viewUrl,
+            driveId,
+            modifiedTime: `${Number(newRecordForm.rocYear) + 1911}-${newRecordForm.month.padStart(2, '0')}-01`,
+            isCustom: true
+          };
+
+          // 1. 本地立即儲存
+          setCustomRecords(prev => [createdItem, ...prev]);
+
+          // 2. 若有設定 Google Apps Script Webhook，嘗試同步發送 POST 追加到試算表
+          if (webhookUrl.trim()) {
+            try {
+              await fetch(webhookUrl.trim(), {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(createdItem)
+              });
+              setStatusMessage(`已建立紀錄並傳送至 Google 試算表 Webhook！`);
+            } catch (err) {
+              console.warn('Apps Script Webhook 送出失敗:', err);
+              setStatusMessage(`紀錄已建立於本地，但 Webhook 送出遭遇網路限制`);
+            }
+          } else {
+            setStatusMessage(`已成功在本地建立 1 筆檔案紀錄！`);
+          }
+
+          setIsSubmitting(false);
+          setIsAddModalOpen(false);
+          // 重設表單
+          setNewRecordForm(prev => ({
+            ...prev,
+            name: '',
+            driveLinkOrId: '',
+            customOrg: '',
+            customCategory: ''
+          }));
+          setActiveTab('all');
+        };
+
+        // 匯出 CSV 功能
+        const exportToCsv = () => {
+          if (filteredRecords.length === 0) {
+            alert('目前無可匯出的資料！');
+            return;
+          }
+          const headers = ['檔案ID', '檔案名稱', '檔案分類', '子分類', '檔案年份', '檔案月份', '機構/區域', '上傳檔案', '上傳者', '上傳時間', '下載連結'];
+          const rows = filteredRecords.map(r => [
+            `"${r.id || ''}"`,
+            `"${(r.name || '').replace(/"/g, '""')}"`,
+            `"${r.category || ''}"`,
+            `"${r.subCategory || ''}"`,
+            `"${r.rocYear || ''}"`,
+            `"${r.month || ''}"`,
+            `"${r.org || ''}"`,
+            `"${(r.filePath || '').replace(/"/g, '""')}"`,
+            `"${r.uploader || ''}"`,
+            `"${r.uploadTime || ''}"`,
+            `"${r.downloadUrl || ''}"`
+          ]);
+
+          const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.setAttribute('href', url);
+          link.setAttribute('download', `雲端硬碟文檔清單_${new Date().toISOString().slice(0, 10)}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        };
+
+        // 複製 Apps Script 程式碼
+        const copyAppsScript = () => {
+          const code = `// Google Apps Script 試算表自動寫入腳本
+function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var data = JSON.parse(e.postData.contents);
+    sheet.appendRow([
+      data.id || Utilities.getUuid().slice(0, 8),
+      data.name || '',
+      data.category || '',
+      data.subCategory || '',
+      data.rocYear || '',
+      data.month || '',
+      data.org || '',
+      data.filePath || '',
+      data.uploader || '',
+      data.uploadTime || new Date().toISOString(),
+      data.downloadUrl || ''
+    ]);
+    return ContentService.createTextOutput(JSON.stringify({ result: "success" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ result: "error", message: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}`;
+          navigator.clipboard.writeText(code).then(() => {
+            setCopySuccess(true);
+            setTimeout(() => setCopySuccess(false), 3000);
+          });
+        };
 
         return (
           <div className="flex h-screen bg-slate-900 text-slate-100 font-sans overflow-hidden">
             
             {/* 側邊導航列 */}
-            <aside className="w-72 bg-slate-950 border-r border-slate-800 flex flex-col flex-shrink-0">
+            <aside className="w-80 bg-slate-950 border-r border-slate-800 flex flex-col flex-shrink-0">
               
               {/* Header */}
-              <div className="p-5 border-b border-slate-800/80 flex items-center justify-between">
+              <div className="p-4 border-b border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-slate-900 border border-slate-800 rounded-xl shadow-md">
-                    <IconGoogleDrive size={24} />
+                    <IconGoogleDrive size={22} />
                   </div>
                   <div>
                     <h1 className="font-bold text-sm text-slate-100 flex items-center gap-1.5">
-                      <span>雲端硬碟檔案庫</span>
+                      <span>文檔智管庫</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-mono">v2.0</span>
                     </h1>
                     <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5">
-                      <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-                      <span>{isConnected ? '已連線 Drive' : 'Drive 模擬演示中'}</span>
+                      <span className={`w-2 h-2 rounded-full ${isLoading ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`} />
+                      <span>{isLoading ? '同步中...' : `試算表已連線 (${allCombinedRecords.length} 筆)`}</span>
                     </div>
                   </div>
                 </div>
+                <button 
+                  onClick={() => setIsSettingsModalOpen(true)}
+                  title="設定與 Google Apps Script 回寫"
+                  className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition"
+                >
+                  <IconSettings size={16} />
+                </button>
               </div>
 
-              {/* Google Drive 授權按鈕列 */}
-              <div className="p-4 border-b border-slate-800/50">
+              {/* 快捷操作按鈕群 */}
+              <div className="p-3 border-b border-slate-800/60 space-y-2">
                 <button
-                  onClick={handleConnectGoogleDrive}
-                  className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium py-2 px-3 rounded-xl transition text-xs shadow-lg shadow-blue-500/20 active:scale-95"
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium py-2 px-3 rounded-xl transition text-xs shadow-md shadow-blue-500/20 active:scale-95"
                 >
-                  <IconGoogleDrive size={16} />
-                  <span>{isConnected ? '重新同步 Google 硬碟' : '連接您的 Google 雲端硬碟'}</span>
+                  <IconPlus size={16} />
+                  <span>建立新檔案紀錄</span>
                 </button>
-                <div className="flex justify-between items-center mt-2 px-1 text-[11px]">
-                  <span className="text-slate-500">{statusMessage}</span>
-                  <button onClick={() => setIsConfigModalOpen(true)} className="text-indigo-400 hover:underline">
-                    金鑰設定
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => loadSheetRecords(sheetId, sheetGid)}
+                    disabled={isLoading}
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 py-1.5 px-2 rounded-lg text-[11px] text-slate-300 transition"
+                  >
+                    <IconRefresh size={13} className={isLoading ? 'animate-spin' : ''} />
+                    <span>{isLoading ? '同步中' : '重新抓取試算表'}</span>
+                  </button>
+                  <button
+                    onClick={exportToCsv}
+                    title="匯出當前清單為 CSV 檔案"
+                    className="flex items-center justify-center gap-1 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 py-1.5 px-2 rounded-lg text-[11px] text-slate-300 transition"
+                  >
+                    <IconDownload size={13} />
+                    <span>匯出 CSV</span>
                   </button>
                 </div>
               </div>
 
               {/* 導覽列表 */}
-              <div className="flex-1 overflow-y-auto px-3 py-3 space-y-6 custom-scrollbar text-xs">
+              <div className="flex-1 overflow-y-auto px-3 py-3 space-y-5 custom-scrollbar text-xs">
                 
                 {/* 主選單 */}
                 <div className="space-y-1">
-                  <div className="px-3 font-semibold text-slate-500 uppercase tracking-wider mb-2">檔案視圖</div>
+                  <div className="px-3 font-semibold text-slate-500 uppercase tracking-wider mb-1.5 text-[10px]">檔案總覽</div>
                   
                   <button
-                    onClick={() => { setActiveTab('all'); setSelectedFolderId(null); setSelectedYearMonth(null); }}
+                    onClick={() => { setActiveTab('all'); setSelectedOrg(null); setSelectedCategory(null); setSelectedYearMonth(null); }}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-lg font-medium transition ${
                       activeTab === 'all' ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <IconFolder size={16} className={activeTab === 'all' ? 'text-blue-400' : 'text-slate-400'} />
-                      <span>全部雲端檔案</span>
+                    <div className="flex items-center gap-2">
+                      <IconFolder size={15} className={activeTab === 'all' ? 'text-blue-400' : 'text-slate-400'} />
+                      <span>全部檔案紀錄</span>
                     </div>
-                    <span className="bg-slate-800 px-2 py-0.5 rounded-full text-slate-400">
-                      {driveFiles.length}
+                    <span className="bg-slate-800 px-2 py-0.5 rounded-full text-[10px] text-slate-400 font-mono">
+                      {allCombinedRecords.length}
                     </span>
                   </button>
 
                   <button
-                    onClick={() => { setActiveTab('starred'); setSelectedFolderId(null); setSelectedYearMonth(null); }}
+                    onClick={() => { setActiveTab('starred'); setSelectedOrg(null); setSelectedCategory(null); setSelectedYearMonth(null); }}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-lg font-medium transition ${
                       activeTab === 'starred' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <IconStar size={16} className={activeTab === 'starred' ? 'text-amber-400' : 'text-slate-400'} fill={activeTab === 'starred' ? '#F59E0B' : 'none'} />
-                      <span>已加星號文檔</span>
+                    <div className="flex items-center gap-2">
+                      <IconStar size={15} className={activeTab === 'starred' ? 'text-amber-400' : 'text-slate-400'} fill={activeTab === 'starred' ? '#F59E0B' : 'none'} />
+                      <span>已加星號收藏</span>
                     </div>
-                    <span className="bg-slate-800 px-2 py-0.5 rounded-full text-slate-400">
-                      {driveFiles.filter(f => f.starred).length}
+                    <span className="bg-slate-800 px-2 py-0.5 rounded-full text-[10px] text-slate-400 font-mono">
+                      {starredIds.length}
                     </span>
                   </button>
                 </div>
 
-                {/* 按 Google 雲端硬碟資料夾 (專案) 分類 */}
+                {/* 按機構/區域分類 */}
                 <div>
-                  <div className="px-3 font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center justify-between">
-                    <span>Drive 資料夾 (專案分類)</span>
+                  <div className="px-3 font-semibold text-slate-500 uppercase tracking-wider mb-1.5 text-[10px] flex items-center justify-between">
+                    <span className="flex items-center gap-1"><IconBuilding size={12} /> 機構 / 區域分類 ({orgStats.length})</span>
                   </div>
-                  <div className="space-y-1">
-                    {folders.map(folder => {
-                      const count = driveFiles.filter(f => f.folderId === folder.id).length;
-                      const isSelected = activeTab === 'folder' && selectedFolderId === folder.id;
+                  <div className="space-y-0.5 max-h-48 overflow-y-auto custom-scrollbar pr-1">
+                    {orgStats.map(({ name, count }) => {
+                      const isSelected = activeTab === 'org' && selectedOrg === name;
+                      const dotColor = getOrgColor(name);
                       return (
                         <button
-                          key={folder.id}
+                          key={name}
                           onClick={() => {
-                            setActiveTab('folder');
-                            setSelectedFolderId(folder.id);
+                            setActiveTab('org');
+                            setSelectedOrg(name);
+                            setSelectedCategory(null);
                             setSelectedYearMonth(null);
                           }}
-                          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg font-medium transition ${
-                            isSelected ? 'bg-slate-800 text-white border border-slate-700' : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-200'
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition ${
+                            isSelected ? 'bg-slate-800 text-blue-300 border border-slate-700' : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-200'
                           }`}
                         >
                           <div className="flex items-center gap-2 truncate">
-                            <span className={`w-2 h-2 rounded-full ${folder.color}`} />
-                            <span className="truncate">{folder.name}</span>
+                            <span className={`w-2 h-2 rounded-full ${dotColor}`} />
+                            <span className="truncate">{name}</span>
                           </div>
-                          <span className="text-[10px] text-slate-500">{count}</span>
+                          <span className="text-[10px] text-slate-500 font-mono bg-slate-900/60 px-1.5 py-0.5 rounded">{count}</span>
                         </button>
                       );
                     })}
                   </div>
                 </div>
 
-                {/* 按修改時間年月份分類 (Timeline Tree) */}
+                {/* 按檔案分類 */}
                 <div>
-                  <div className="px-3 font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <IconCalendar size={14} />
-                    <span>按修改年月份分類</span>
+                  <div className="px-3 font-semibold text-slate-500 uppercase tracking-wider mb-1.5 text-[10px] flex items-center justify-between">
+                    <span className="flex items-center gap-1"><IconTag size={12} /> 檔案類別 ({categoryStats.length})</span>
+                  </div>
+                  <div className="space-y-0.5">
+                    {categoryStats.map(({ name, count }) => {
+                      const isSelected = activeTab === 'category' && selectedCategory === name;
+                      return (
+                        <button
+                          key={name}
+                          onClick={() => {
+                            setActiveTab('category');
+                            setSelectedCategory(name);
+                            setSelectedSubCategory(null);
+                            setSelectedOrg(null);
+                            setSelectedYearMonth(null);
+                          }}
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition ${
+                            isSelected ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30' : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-200'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <IconFileText size={13} className="text-slate-500" />
+                            <span className="truncate">{name}</span>
+                          </div>
+                          <span className="text-[10px] text-slate-500 font-mono bg-slate-900/60 px-1.5 py-0.5 rounded">{count}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 按修改時間年月份分類 (民國/西元) */}
+                <div>
+                  <div className="px-3 font-semibold text-slate-500 uppercase tracking-wider mb-1.5 text-[10px] flex items-center gap-1">
+                    <IconCalendar size={12} />
+                    <span>按年份 / 月份分類</span>
                   </div>
                   
-                  <div className="space-y-1 pl-1">
-                    {yearMonthTree.map(({ year, months }) => {
-                      const isExpanded = expandedYears.includes(year);
+                  <div className="space-y-1">
+                    {yearMonthTree.map(({ rocYear, adYear, months }) => {
+                      const isExpanded = expandedYears.includes(rocYear);
+                      const totalInYear = allCombinedRecords.filter(r => r.rocYear === rocYear).length;
+
                       return (
-                        <div key={year} className="space-y-1">
+                        <div key={rocYear} className="space-y-0.5">
                           <button
-                            onClick={() => toggleYearExpand(year)}
-                            className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:bg-slate-800/60 transition"
+                            onClick={() => setExpandedYears(prev => prev.includes(rocYear) ? prev.filter(y => y !== rocYear) : [...prev, rocYear])}
+                            className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition"
                           >
                             <div className="flex items-center gap-1.5">
-                              {isExpanded ? <IconChevronDown size={14} className="text-slate-400" /> : <IconChevronRight size={14} className="text-slate-400" />}
-                              <span>{year} 年</span>
+                              {isExpanded ? <IconChevronDown size={13} className="text-slate-400" /> : <IconChevronRight size={13} className="text-slate-400" />}
+                              <span>民國 {rocYear} 年 ({adYear})</span>
                             </div>
-                            <span className="text-[10px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded">
-                              {driveFiles.filter(f => formatDate(f.modifiedTime).startsWith(year)).length}
+                            <span className="text-[10px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded font-mono">
+                              {totalInYear}
                             </span>
                           </button>
 
                           {isExpanded && (
-                            <div className="pl-5 space-y-0.5 border-l border-slate-800 ml-3">
+                            <div className="pl-4 space-y-0.5 border-l border-slate-800 ml-3">
                               {months.map(ym => {
                                 const [y, m] = ym.split('-');
-                                const count = driveFiles.filter(f => formatDate(f.modifiedTime).startsWith(ym)).length;
+                                const count = allCombinedRecords.filter(r => r.rocYear === y && r.month === m).length;
                                 const isSelected = activeTab === 'date' && selectedYearMonth === ym;
 
                                 return (
@@ -503,7 +758,8 @@
                                     onClick={() => {
                                       setActiveTab('date');
                                       setSelectedYearMonth(ym);
-                                      setSelectedFolderId(null);
+                                      setSelectedOrg(null);
+                                      setSelectedCategory(null);
                                     }}
                                     className={`w-full flex items-center justify-between px-2 py-1 rounded-md text-xs transition ${
                                       isSelected 
@@ -511,8 +767,8 @@
                                         : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-200'
                                     }`}
                                   >
-                                    <span>{m} 月 ({ym})</span>
-                                    <span className="text-[10px] text-slate-500">{count}</span>
+                                    <span>{m} 月</span>
+                                    <span className="text-[10px] text-slate-500 font-mono">{count}</span>
                                   </button>
                                 );
                               })}
@@ -526,12 +782,17 @@
 
               </div>
 
+              {/* 底部狀態列 */}
+              <div className="p-3 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
+                <span className="truncate" title={statusMessage}>{statusMessage}</span>
+              </div>
+
             </aside>
 
             {/* 主內容區塊 */}
             <main className="flex-1 flex flex-col min-w-0 bg-slate-900 overflow-hidden">
               
-              {/* 頂部搜尋列 */}
+              {/* 頂部工具列 */}
               <header className="h-16 border-b border-slate-800 px-6 flex items-center justify-between gap-4 bg-slate-900/80 backdrop-blur-md flex-shrink-0">
                 <div className="relative flex-1 max-w-md">
                   <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500">
@@ -539,54 +800,29 @@
                   </div>
                   <input 
                     type="text" 
-                    placeholder="搜尋 Google Drive 檔案名稱或資料夾..." 
+                    placeholder="搜尋文檔名稱、機構名稱、分類、上傳者..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-slate-800 text-slate-100 placeholder-slate-500 pl-10 pr-4 py-2 rounded-xl text-xs border border-slate-700/60 focus:outline-none focus:border-blue-500"
+                    className="w-full bg-slate-800 text-slate-100 placeholder-slate-500 pl-10 pr-8 py-2 rounded-xl text-xs border border-slate-700/60 focus:outline-none focus:border-blue-500 transition"
                   />
                   {searchQuery && (
-                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">
+                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
                       <IconX size={14} />
                     </button>
                   )}
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <button 
-                    onClick={() => {
-                      if (isConnected) fetchRealDriveFiles();
-                      else {
-                        setDriveFiles([...MOCK_DRIVE_FILES]);
-                        alert('已重新重設 Google 模擬檔案清單');
-                      }
-                    }}
-                    className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-xl text-xs text-slate-300 transition"
+                  <a 
+                    href={`https://docs.google.com/spreadsheets/d/${sheetId}/edit?gid=${sheetGid}#gid=${sheetGid}`} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl transition"
                   >
-                    <IconRefresh size={14} className={isSyncing ? 'animate-spin' : ''} />
-                    <span>即時重新整理</span>
-                  </button>
-                </div>
-              </header>
-
-              {/* 檔案卡片清單 */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
-                
-                {/* 狀態標題 Banner */}
-                <div className="bg-slate-800/40 p-4 rounded-2xl border border-slate-800 flex justify-between items-center">
-                  <div>
-                    <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-                      <IconGoogleDrive size={20} />
-                      <span>
-                        {activeTab === 'all' && 'Google 雲端硬碟全部檔案'}
-                        {activeTab === 'starred' && '已加星號的重要檔案'}
-                        {activeTab === 'folder' && `資料夾：${folders.find(f => f.id === selectedFolderId)?.name || '未命名'}`}
-                        {activeTab === 'date' && `修改時間：${selectedYearMonth}`}
-                      </span>
-                    </h2>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      符合條件的雲端檔案：<span className="text-blue-400 font-semibold">{filteredFiles.length}</span> 件
-                    </p>
-                  </div>
+                    <IconSheets size={14} />
+                    <span>開啟 Google 試算表</span>
+                    <IconExternalLink size={12} />
+                  </a>
 
                   <a 
                     href="https://drive.google.com" 
@@ -594,106 +830,454 @@
                     rel="noreferrer"
                     className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 bg-blue-500/10 border border-blue-500/20 px-3 py-1.5 rounded-xl transition"
                   >
-                    <span>開啟官方 Google 雲端硬碟</span>
-                    <IconExternalLink size={14} />
+                    <IconGoogleDrive size={14} />
+                    <span>開啟 Google Drive</span>
+                    <IconExternalLink size={12} />
                   </a>
                 </div>
+              </header>
 
-                {/* 檔案卡片 Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {filteredFiles.map(file => (
-                    <div 
-                      key={file.id}
-                      className="bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 hover:border-blue-500/50 rounded-2xl p-4 transition flex flex-col justify-between group shadow-lg"
+              {/* 內容區 */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
+                
+                {/* 狀態標題 Banner */}
+                <div className="bg-slate-800/40 p-4 rounded-2xl border border-slate-800 flex justify-between items-center">
+                  <div>
+                    <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
+                      <IconFolder size={18} className="text-blue-400" />
+                      <span>
+                        {activeTab === 'all' && '全部檔案紀錄清單'}
+                        {activeTab === 'starred' && '已加星號重點收藏文檔'}
+                        {activeTab === 'org' && `機構分類：${selectedOrg}`}
+                        {activeTab === 'category' && `類別：${selectedCategory}${selectedSubCategory ? ` > ${selectedSubCategory}` : ''}`}
+                        {activeTab === 'date' && `年份月份：民國 ${selectedYearMonth?.split('-')[0]} 年 ${selectedYearMonth?.split('-')[1]} 月`}
+                      </span>
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1">
+                      符合條件的紀錄：<span className="text-blue-400 font-semibold font-mono">{filteredRecords.length}</span> 筆
+                      {searchQuery && <span className="ml-2 text-slate-500">(搜尋關鍵字: "{searchQuery}")</span>}
+                      {customRecords.length > 0 && <span className="ml-2 text-emerald-400">(含本機新增 {customRecords.length} 筆)</span>}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {(activeTab !== 'all' || searchQuery) && (
+                      <button
+                        onClick={() => {
+                          setActiveTab('all');
+                          setSelectedOrg(null);
+                          setSelectedCategory(null);
+                          setSelectedSubCategory(null);
+                          setSelectedYearMonth(null);
+                          setSearchQuery('');
+                        }}
+                        className="text-xs text-slate-400 hover:text-slate-200 bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-xl border border-slate-700 transition"
+                      >
+                        清除所有篩選
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* 載入中骨架屏 */}
+                {isLoading && records.length === 0 && (
+                  <div className="flex flex-col items-center justify-center p-16 space-y-3">
+                    <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-sm text-slate-400">正在從 Google 試算表載入 1,200+ 筆資料，請稍候...</p>
+                  </div>
+                )}
+
+                {/* 無相符資料 */}
+                {!isLoading && filteredRecords.length === 0 && (
+                  <div className="bg-slate-800/20 border border-slate-800 rounded-2xl p-12 text-center space-y-3">
+                    <p className="text-slate-400 text-sm">找不到符合條件的檔案紀錄</p>
+                    <button
+                      onClick={() => setIsAddModalOpen(true)}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-medium transition"
                     >
-                      <div>
-                        {/* 頂部圖示與星號 */}
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-700/50">
-                            {renderDriveIcon(file.mimeType, 22)}
+                      ➕ 立即建立這筆紀錄
+                    </button>
+                  </div>
+                )}
+
+                {/* 檔案卡片 Grid (分頁展示) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {pagedRecords.map(item => {
+                    const orgColor = getOrgColor(item.org);
+
+                    return (
+                      <div 
+                        key={item.id}
+                        className="bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 hover:border-blue-500/50 rounded-2xl p-4 transition flex flex-col justify-between group shadow-lg"
+                      >
+                        <div>
+                          {/* 頂部圖示與操作 */}
+                          <div className="flex items-start justify-between mb-2.5">
+                            <div className="flex items-center gap-2">
+                              <div className="p-2 bg-slate-900 rounded-xl border border-slate-700/50">
+                                <IconFileText size={20} className="text-red-400" />
+                              </div>
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-medium text-white ${orgColor}`}>
+                                {item.org}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-1">
+                              <button 
+                                onClick={(e) => toggleStar(e, item.id)}
+                                title={item.starred ? '取消星號' : '加註星號'}
+                                className={`p-1 transition ${item.starred ? 'text-amber-400' : 'text-slate-500 hover:text-slate-300'}`}
+                              >
+                                <IconStar size={16} fill={item.starred ? '#F59E0B' : 'none'} />
+                              </button>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <button 
-                              onClick={(e) => toggleStar(e, file.id)}
-                              className={`p-1 transition ${file.starred ? 'text-amber-400' : 'text-slate-500 hover:text-slate-300'}`}
-                            >
-                              <IconStar size={16} fill={file.starred ? '#F59E0B' : 'none'} />
-                            </button>
+
+                          {/* 檔名 */}
+                          <h3 className="font-semibold text-slate-100 text-xs line-clamp-2 mb-2 group-hover:text-blue-400 transition" title={item.name}>
+                            {item.name}
+                          </h3>
+
+                          {/* 分類標籤 */}
+                          <div className="flex flex-wrap gap-1 mb-2.5">
+                            <span className="px-2 py-0.5 rounded bg-blue-600/20 text-blue-300 border border-blue-500/30 text-[10px]">
+                              {item.category}
+                            </span>
+                            {item.subCategory && (
+                              <span className="px-2 py-0.5 rounded bg-slate-700/60 text-slate-300 text-[10px]">
+                                {item.subCategory}
+                              </span>
+                            )}
+                            {item.isCustom && (
+                              <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[9px] border border-emerald-500/30">
+                                新增紀錄
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* 底部元數據與操作按鈕 */}
+                        <div className="pt-2.5 border-t border-slate-700/50 space-y-2 text-[10px]">
+                          <div className="flex justify-between items-center text-slate-400">
+                            <span className="flex items-center gap-1 font-mono">
+                              <IconCalendar size={11} /> 115_{item.month} ({item.adYear})
+                            </span>
+                            <span className="text-slate-500 truncate max-w-[90px]" title={item.uploader}>
+                              {item.uploader}
+                            </span>
+                          </div>
+
+                          {/* 連結操作按鈕 */}
+                          <div className="flex gap-2 pt-1">
                             <a
-                              href={file.webViewLink}
+                              href={item.viewUrl}
                               target="_blank"
                               rel="noreferrer"
-                              title="在 Google 雲端硬碟中檢視或編輯"
-                              className="p-1 text-slate-400 hover:text-blue-400 transition"
+                              className="flex-1 flex items-center justify-center gap-1 bg-slate-700/60 hover:bg-slate-700 text-slate-200 py-1.5 rounded-lg transition"
                             >
-                              <IconExternalLink size={16} />
+                              <IconExternalLink size={12} />
+                              <span>預覽文檔</span>
                             </a>
+                            {item.downloadUrl && (
+                              <a
+                                href={item.downloadUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                download
+                                className="flex-1 flex items-center justify-center gap-1 bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-500/30 py-1.5 rounded-lg transition"
+                              >
+                                <IconDownload size={12} />
+                                <span>下載</span>
+                              </a>
+                            )}
                           </div>
                         </div>
 
-                        {/* 檔名與說明 */}
-                        <h3 className="font-semibold text-slate-100 text-xs line-clamp-1 mb-1 group-hover:text-blue-400 transition" title={file.name}>
-                          {file.name}
-                        </h3>
-                        <p className="text-[11px] text-slate-400 line-clamp-2 h-7 mb-2">
-                          {file.description}
-                        </p>
                       </div>
-
-                      {/* 底部元數據 */}
-                      <div className="pt-3 border-t border-slate-700/50 space-y-1.5 text-[10px]">
-                        <div className="flex justify-between items-center text-slate-400">
-                          <span className="flex items-center gap-1"><IconCalendar size={12} /> {formatDate(file.modifiedTime)}</span>
-                          <span>{formatBytes(file.size)}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="px-2 py-0.5 rounded bg-blue-600/20 text-blue-300 border border-blue-500/30 truncate max-w-[120px]">
-                            {file.folderName}
-                          </span>
-                          <span className="text-slate-500">作者: {file.author}</span>
-                        </div>
-                      </div>
-
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
+
+                {/* 分頁控制器 */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between border-t border-slate-800 pt-4 pb-2 text-xs">
+                    <div className="text-slate-400">
+                      顯示第 <span className="font-mono text-slate-200">{(currentPage - 1) * pageSize + 1}</span> 至{' '}
+                      <span className="font-mono text-slate-200">{Math.min(currentPage * pageSize, filteredRecords.length)}</span> 筆 (共 {filteredRecords.length} 筆)
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => setCurrentPage(1)}
+                        disabled={currentPage === 1}
+                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 rounded-lg text-slate-300"
+                      >
+                        首頁
+                      </button>
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 rounded-lg text-slate-300"
+                      >
+                        上一頁
+                      </button>
+                      <span className="px-3 py-1 font-mono text-blue-400 bg-slate-800/80 rounded-lg border border-slate-700">
+                        {currentPage} / {totalPages}
+                      </span>
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 rounded-lg text-slate-300"
+                      >
+                        下一頁
+                      </button>
+                      <button
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 rounded-lg text-slate-300"
+                      >
+                        末頁
+                      </button>
+                    </div>
+                  </div>
+                )}
 
               </div>
 
             </main>
 
-            {/* Modal: Google Cloud API Client ID 設定 */}
-            {isConfigModalOpen && (
+            {/* Modal: 建立新檔案紀錄 */}
+            {isAddModalOpen && (
               <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
                 <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg p-6 space-y-4 text-xs">
                   <div className="flex justify-between items-center border-b border-slate-800 pb-3">
                     <h3 className="font-bold text-sm text-slate-100 flex items-center gap-2">
-                      <IconGoogleDrive size={18} />
-                      <span>設定 Google Drive API 憑證</span>
+                      <IconPlus size={18} className="text-blue-400" />
+                      <span>建立新檔案紀錄</span>
                     </h3>
-                    <button onClick={() => setIsConfigModalOpen(false)}><IconX size={16} /></button>
+                    <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-slate-200">
+                      <IconX size={16} />
+                    </button>
                   </div>
 
-                  <div className="space-y-3 text-slate-300 leading-relaxed">
-                    <p className="text-slate-400">
-                      若要將此網頁直接讀取您的真實 Google 雲端硬碟，需至 Google Cloud Console 建立免費的 OAuth 2.0 Client ID：
-                    </p>
-                    <ol className="list-decimal pl-4 space-y-1 text-slate-400">
-                      <li>前往 Google Cloud Console 啟用 <b>Google Drive API</b>。</li>
-                      <li>在「憑證」中建立 <b>OAuth 2.0 用戶端 ID</b>（應用程式類型選擇「網頁應用程式」）。</li>
-                      <li>將此網頁的網址加入「已獲授權的 JavaScript 來源」。</li>
-                      <li>將產生的用戶端 ID 貼至下方即可。</li>
-                    </ol>
-
+                  <form onSubmit={handleCreateRecord} className="space-y-3.5">
                     <div>
-                      <label className="block text-slate-400 mb-1 font-semibold">Google OAuth Client ID</label>
+                      <label className="block text-slate-300 mb-1 font-semibold">檔案名稱 <span className="text-red-400">*</span></label>
                       <input 
                         type="text" 
-                        placeholder="例如: 123456789-xxxxxx.apps.googleusercontent.com"
-                        value={clientId}
-                        onChange={(e) => setClientId(e.target.value)}
+                        required
+                        placeholder="例如: 115_06_護家_消毒資料_消毒照片"
+                        value={newRecordForm.name}
+                        onChange={(e) => setNewRecordForm({ ...newRecordForm, name: e.target.value })}
                         className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500"
                       />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-slate-300 mb-1 font-semibold">機構 / 區域</label>
+                        <select
+                          value={newRecordForm.org}
+                          onChange={(e) => setNewRecordForm({ ...newRecordForm, org: e.target.value })}
+                          className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500"
+                        >
+                          {orgStats.map(o => (
+                            <option key={o.name} value={o.name}>{o.name}</option>
+                          ))}
+                          <option value="__custom__">+ 自訂新機構...</option>
+                        </select>
+                        {newRecordForm.org === '__custom__' && (
+                          <input 
+                            type="text" 
+                            placeholder="輸入新機構名稱"
+                            value={newRecordForm.customOrg}
+                            onChange={(e) => setNewRecordForm({ ...newRecordForm, customOrg: e.target.value })}
+                            className="mt-1.5 w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-100 focus:outline-none focus:border-blue-500"
+                          />
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-slate-300 mb-1 font-semibold">檔案分類</label>
+                        <select
+                          value={newRecordForm.category}
+                          onChange={(e) => setNewRecordForm({ ...newRecordForm, category: e.target.value })}
+                          className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500"
+                        >
+                          {categoryStats.map(c => (
+                            <option key={c.name} value={c.name}>{c.name}</option>
+                          ))}
+                          <option value="__custom__">+ 自訂新分類...</option>
+                        </select>
+                        {newRecordForm.category === '__custom__' && (
+                          <input 
+                            type="text" 
+                            placeholder="輸入新分類名稱"
+                            value={newRecordForm.customCategory}
+                            onChange={(e) => setNewRecordForm({ ...newRecordForm, customCategory: e.target.value })}
+                            className="mt-1.5 w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-slate-100 focus:outline-none focus:border-blue-500"
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-slate-300 mb-1 font-semibold">子分類</label>
+                        <input 
+                          type="text" 
+                          placeholder="例如: 消毒照片"
+                          value={newRecordForm.subCategory}
+                          onChange={(e) => setNewRecordForm({ ...newRecordForm, subCategory: e.target.value })}
+                          className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-slate-300 mb-1 font-semibold">民國年份</label>
+                        <input 
+                          type="text" 
+                          placeholder="115"
+                          value={newRecordForm.rocYear}
+                          onChange={(e) => setNewRecordForm({ ...newRecordForm, rocYear: e.target.value })}
+                          className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500 font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-slate-300 mb-1 font-semibold">月份</label>
+                        <input 
+                          type="text" 
+                          placeholder="06"
+                          value={newRecordForm.month}
+                          onChange={(e) => setNewRecordForm({ ...newRecordForm, month: e.target.value })}
+                          className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500 font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-300 mb-1 font-semibold">Google Drive 下載連結或檔案 ID</label>
+                      <input 
+                        type="text" 
+                        placeholder="例如: https://drive.google.com/file/d/1NGincEB... 或檔案 ID"
+                        value={newRecordForm.driveLinkOrId}
+                        onChange={(e) => setNewRecordForm({ ...newRecordForm, driveLinkOrId: e.target.value })}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-300 mb-1 font-semibold">上傳者</label>
+                      <input 
+                        type="text" 
+                        value={newRecordForm.uploader}
+                        onChange={(e) => setNewRecordForm({ ...newRecordForm, uploader: e.target.value })}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+
+                    <div className="flex justify-between items-center pt-3 border-t border-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => setIsAddModalOpen(false)}
+                        className="text-slate-400 hover:text-slate-200"
+                      >
+                        取消
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition flex items-center gap-2"
+                      >
+                        {isSubmitting ? '儲存中...' : '確認建立紀錄'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Modal: 設定與 Apps Script 回寫設定 */}
+            {isSettingsModalOpen && (
+              <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-xl p-6 space-y-4 text-xs max-h-[90vh] overflow-y-auto custom-scrollbar">
+                  <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <h3 className="font-bold text-sm text-slate-100 flex items-center gap-2">
+                      <IconSettings size={18} />
+                      <span>資料來源與 Google Apps Script 回寫設定</span>
+                    </h3>
+                    <button onClick={() => setIsSettingsModalOpen(false)} className="text-slate-400 hover:text-slate-200">
+                      <IconX size={16} />
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-slate-300 mb-1 font-semibold">Google 試算表 ID</label>
+                      <input 
+                        type="text" 
+                        value={sheetId}
+                        onChange={(e) => {
+                          setSheetId(e.target.value);
+                          localStorage.setItem('hok_sheet_id', e.target.value);
+                        }}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500 font-mono text-xs"
+                      />
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        預設: <code>1X5-VXaa-eKAzpvGJZgzODh_hc4uvdVwkcjTFj-UWFG8</code>
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-300 mb-1 font-semibold">試算表工作表 GID</label>
+                      <input 
+                        type="text" 
+                        value={sheetGid}
+                        onChange={(e) => {
+                          setSheetGid(e.target.value);
+                          localStorage.setItem('hok_sheet_gid', e.target.value);
+                        }}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500 font-mono text-xs"
+                      />
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-800">
+                      <label className="block text-slate-300 mb-1 font-semibold">
+                        Google Apps Script Web App 網址 (用於同步回寫試算表)
+                      </label>
+                      <input 
+                        type="text" 
+                        placeholder="例如: https://script.google.com/macros/s/AKfycbx.../exec"
+                        value={webhookUrl}
+                        onChange={(e) => {
+                          setWebhookUrl(e.target.value);
+                          localStorage.setItem('hok_apps_script_url', e.target.value);
+                        }}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500 font-mono text-xs"
+                      />
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        若填寫此 Webhook 網址，在網頁建立新紀錄時會自動同步追加一行至試算表！
+                      </p>
+                    </div>
+
+                    {/* Apps Script 快速指引 */}
+                    <div className="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold text-slate-300 text-xs">Google Apps Script 試算表寫入代碼</span>
+                        <button
+                          type="button"
+                          onClick={copyAppsScript}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[11px] transition"
+                        >
+                          {copySuccess ? '已複製代碼！' : '一鍵複製腳本'}
+                        </button>
+                      </div>
+                      <ol className="list-decimal pl-4 space-y-1 text-slate-400 text-[11px] leading-relaxed">
+                        <li>在 Google 試算表選單點擊 <b>擴充功能 ➔ Apps Script</b>。</li>
+                        <li>清除原有程式碼，點擊上方按鈕複製代碼並貼上。</li>
+                        <li>點擊右上角 <b>部署 ➔ 新增部署作業</b>。</li>
+                        <li>類型選擇「網頁應用程式」，將「誰可以存取」設為<b>「所有人」</b>。</li>
+                        <li>複製產生的網頁應用程式網址，貼至上方欄位即可！</li>
+                      </ol>
                     </div>
                   </div>
 
@@ -701,19 +1285,23 @@
                     <button
                       type="button"
                       onClick={() => {
-                        setIsConfigModalOpen(false);
-                        setStatusMessage('維持展示演示模式');
+                        localStorage.removeItem('hok_custom_records');
+                        setCustomRecords([]);
+                        alert('已清除本機自訂紀錄');
                       }}
-                      className="text-slate-400 hover:text-slate-200"
+                      className="text-red-400 hover:text-red-300"
                     >
-                      使用展示模式
+                      清除本機新增紀錄
                     </button>
                     <button
                       type="button"
-                      onClick={handleConnectGoogleDrive}
+                      onClick={() => {
+                        loadSheetRecords(sheetId, sheetGid);
+                        setIsSettingsModalOpen(false);
+                      }}
                       className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium"
                     >
-                      確認並發起 Google 授權
+                      套用並重新載入
                     </button>
                   </div>
                 </div>

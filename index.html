@@ -301,15 +301,17 @@
           } catch(e) { return []; }
         });
 
-        // 多選標籤篩選狀態 (支援 年份 + 機構 + 檔案類別 跨維度複合多選)
+        // 多選標籤篩選狀態 (支援 年份 + 機構 + 檔案類別 + 子分類 跨維度複合多選)
         const [selectedYears, setSelectedYears] = useState([]);         // 例如: ['115']
         const [selectedMonths, setSelectedMonths] = useState([]);       // 例如: ['115-06']
         const [selectedOrgs, setSelectedOrgs] = useState([]);           // 例如: ['護家']
         const [selectedCategories, setSelectedCategories] = useState([]);// 例如: ['消毒資料']
+        const [selectedSubCategories, setSelectedSubCategories] = useState([]);// 例如: ['消毒資料::消毒照片']
         const [starredOnly, setStarredOnly] = useState(false);
         const [searchQuery, setSearchQuery] = useState('');
         const [expandedYears, setExpandedYears] = useState(['115', '114']);
         const [expandedGroups, setExpandedGroups] = useState({ benGuan: true, xinGuan: true });
+        const [expandedCategories, setExpandedCategories] = useState(['消毒資料', '合約']);
 
         // 分頁狀態
         const [currentPage, setCurrentPage] = useState(1);
@@ -413,17 +415,50 @@
           };
         }, [allCombinedRecords]);
 
-        // 統計所有分類
-        const categoryStats = useMemo(() => {
-          const map = new Map();
+        // 統計檔案類別與子分類階層結構 (根據試算表 D 欄子分類細分)
+        const categoryHierarchy = useMemo(() => {
+          const catMap = new Map();
+
           allCombinedRecords.forEach(r => {
             const cat = r.category || '未分類';
-            map.set(cat, (map.get(cat) || 0) + 1);
+            const sub = (r.subCategory || '').trim();
+
+            if (!catMap.has(cat)) {
+              catMap.set(cat, {
+                name: cat,
+                count: 0,
+                subMap: new Map()
+              });
+            }
+
+            const item = catMap.get(cat);
+            item.count += 1;
+
+            if (sub) {
+              item.subMap.set(sub, (item.subMap.get(sub) || 0) + 1);
+            }
           });
-          return Array.from(map.entries())
-            .map(([name, count]) => ({ name, count }))
+
+          return Array.from(catMap.values())
+            .map(item => {
+              const subList = Array.from(item.subMap.entries())
+                .map(([subName, subCount]) => ({ name: subName, count: subCount }))
+                .sort((a, b) => b.count - a.count);
+
+              return {
+                name: item.name,
+                count: item.count,
+                hasSub: subList.length > 0,
+                subList
+              };
+            })
             .sort((a, b) => b.count - a.count);
         }, [allCombinedRecords]);
+
+        // 保留相容的 categoryStats 供舊元件與 Modal 使用
+        const categoryStats = useMemo(() => {
+          return categoryHierarchy.map(c => ({ name: c.name, count: c.count }));
+        }, [categoryHierarchy]);
 
         // 統計年月份樹狀結構
         const yearMonthTree = useMemo(() => {
@@ -485,12 +520,26 @@
           );
         };
 
+        const toggleSubCategory = (cat, sub) => {
+          const key = `${cat}::${sub}`;
+          setSelectedSubCategories(prev => 
+            prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+          );
+        };
+
+        const toggleCategoryExpand = (cat) => {
+          setExpandedCategories(prev => 
+            prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+          );
+        };
+
         // 清除所有標籤篩選
         const clearAllFilters = () => {
           setSelectedYears([]);
           setSelectedMonths([]);
           setSelectedOrgs([]);
           setSelectedCategories([]);
+          setSelectedSubCategories([]);
           setStarredOnly(false);
           setSearchQuery('');
         };
@@ -501,11 +550,12 @@
                  selectedMonths.length > 0 || 
                  selectedOrgs.length > 0 || 
                  selectedCategories.length > 0 || 
+                 selectedSubCategories.length > 0 || 
                  starredOnly || 
                  searchQuery.trim() !== '';
-        }, [selectedYears, selectedMonths, selectedOrgs, selectedCategories, starredOnly, searchQuery]);
+        }, [selectedYears, selectedMonths, selectedOrgs, selectedCategories, selectedSubCategories, starredOnly, searchQuery]);
 
-        // 篩選檔案清單 (年份 + 機構 + 檔案類別 跨維度複合多選過濾)
+        // 篩選檔案清單 (年份 + 機構 + 檔案類別/子分類 跨維度複合多選過濾)
         const filteredRecords = useMemo(() => {
           return allCombinedRecords.filter(item => {
             // 1. 關鍵字檢索 (比對名稱、機構、分類、子分類、上傳者)
@@ -539,19 +589,26 @@
               return false;
             }
 
-            // 6. 檔案類別多選篩選 (若選了類別，項目分類必須在選取清單中)
-            if (selectedCategories.length > 0 && !selectedCategories.includes(item.category)) {
-              return false;
+            // 6. 檔案類別與子分類複合篩選：
+            // 如果選取了父類別或子分類，項目只要符合所選的父類別 或 所選的子分類即符合
+            if (selectedCategories.length > 0 || selectedSubCategories.length > 0) {
+              const matchParent = selectedCategories.includes(item.category);
+              const subKey = `${item.category}::${(item.subCategory || '').trim()}`;
+              const matchSub = selectedSubCategories.includes(subKey);
+
+              if (!matchParent && !matchSub) {
+                return false;
+              }
             }
 
             return true;
           });
-        }, [allCombinedRecords, searchQuery, starredOnly, selectedYears, selectedMonths, selectedOrgs, selectedCategories]);
+        }, [allCombinedRecords, searchQuery, starredOnly, selectedYears, selectedMonths, selectedOrgs, selectedCategories, selectedSubCategories]);
 
         // 每次篩選條件改變時重設頁碼至第一頁
         useEffect(() => {
           setCurrentPage(1);
-        }, [searchQuery, starredOnly, selectedYears, selectedMonths, selectedOrgs, selectedCategories]);
+        }, [searchQuery, starredOnly, selectedYears, selectedMonths, selectedOrgs, selectedCategories, selectedSubCategories]);
 
         // 分頁資料
         const totalPages = Math.ceil(filteredRecords.length / pageSize) || 1;
@@ -995,48 +1052,132 @@ function doPost(e) {
                   </div>
                 </div>
 
-                {/* 維度 2：檔案類別分類 (多選支援) */}
+                {/* 維度 2：檔案類別分類 (階層細分支援：有子分類者可點開展開，無子分類者保持原樣) */}
                 <div>
                   <div className="px-3 font-semibold text-slate-500 uppercase tracking-wider mb-1.5 text-[10px] flex items-center justify-between">
                     <span className="flex items-center gap-1.5">
                       <IconTag size={12} />
-                      <span>檔案類別 ({categoryStats.length})</span>
+                      <span>檔案類別 ({categoryHierarchy.length})</span>
                     </span>
-                    {selectedCategories.length > 0 && (
+                    {(selectedCategories.length > 0 || selectedSubCategories.length > 0) && (
                       <button 
-                        onClick={() => setSelectedCategories([])}
+                        onClick={() => { setSelectedCategories([]); setSelectedSubCategories([]); }}
                         className="text-[10px] text-indigo-400 hover:underline"
                       >
-                        清除 ({selectedCategories.length})
+                        清除類別 ({selectedCategories.length + selectedSubCategories.length})
                       </button>
                     )}
                   </div>
 
-                  <div className="space-y-0.5">
-                    {categoryStats.map(({ name, count }) => {
-                      const isSelected = selectedCategories.includes(name);
+                  <div className="space-y-1">
+                    {categoryHierarchy.map((catItem) => {
+                      const { name, count, hasSub, subList } = catItem;
+                      const isCatSelected = selectedCategories.includes(name);
+                      const isExpanded = expandedCategories.includes(name);
+
+                      // 如果 D 欄子分類全為空白：維持原樣單純按鈕，不顯示展開箭頭
+                      if (!hasSub) {
+                        return (
+                          <button
+                            key={name}
+                            onClick={() => toggleCategory(name)}
+                            className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition ${
+                              isCatSelected 
+                                ? 'bg-indigo-600/25 text-indigo-200 border border-indigo-500/40 shadow-sm' 
+                                : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-200'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 truncate">
+                              <IconFileText size={13} className={isCatSelected ? 'text-indigo-400' : 'text-slate-500'} />
+                              <span className="truncate">{name}</span>
+                              {isCatSelected && <IconCheck size={11} className="text-indigo-400 flex-shrink-0" />}
+                            </div>
+                            <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded flex-shrink-0 ${
+                              isCatSelected ? 'bg-indigo-500/30 text-indigo-200' : 'bg-slate-900/60 text-slate-500'
+                            }`}>
+                              {count}
+                            </span>
+                          </button>
+                        );
+                      }
+
+                      // 如果 D 欄有非空白子分類：提供可點開展開子分類功能
+                      const selectedSubCount = subList.filter(s => selectedSubCategories.includes(`${name}::${s.name}`)).length;
 
                       return (
-                        <button
-                          key={name}
-                          onClick={() => toggleCategory(name)}
-                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition ${
-                            isSelected 
-                              ? 'bg-indigo-600/25 text-indigo-200 border border-indigo-500/40 shadow-sm' 
-                              : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-200'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 truncate">
-                            <IconFileText size={13} className={isSelected ? 'text-indigo-400' : 'text-slate-500'} />
-                            <span className="truncate">{name}</span>
-                            {isSelected && <IconCheck size={11} className="text-indigo-400 flex-shrink-0" />}
+                        <div key={name} className="space-y-0.5 bg-slate-900/40 rounded-xl p-1 border border-slate-800/60">
+                          <div className="flex items-center gap-1">
+                            {/* 展開/收合子分類箭頭 */}
+                            <button
+                              onClick={() => toggleCategoryExpand(name)}
+                              className="p-1 text-slate-500 hover:text-slate-300 rounded hover:bg-slate-800 transition flex-shrink-0"
+                              title={isExpanded ? '收合子分類' : '點開展開子分類'}
+                            >
+                              {isExpanded ? <IconChevronDown size={13} /> : <IconChevronRight size={13} />}
+                            </button>
+
+                            {/* 類別主項目 (點擊可多選整類) */}
+                            <button
+                              onClick={() => toggleCategory(name)}
+                              className={`flex-1 flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-medium transition truncate ${
+                                isCatSelected 
+                                  ? 'bg-indigo-600/25 text-indigo-200 border border-indigo-500/40 font-semibold shadow-sm' 
+                                  : 'text-slate-300 hover:bg-slate-800/60'
+                              }`}
+                              title={`點擊全選「${name}」全部檔案`}
+                            >
+                              <div className="flex items-center gap-1.5 truncate">
+                                <IconFolder size={13} className={isCatSelected ? 'text-indigo-400' : 'text-slate-400'} />
+                                <span className="truncate">{name}</span>
+                                {isCatSelected && <IconCheck size={11} className="text-indigo-400 flex-shrink-0" />}
+                                {selectedSubCount > 0 && !isCatSelected && (
+                                  <span className="text-[10px] px-1 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-mono">
+                                    選 {selectedSubCount}
+                                  </span>
+                                )}
+                              </div>
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono flex-shrink-0 ml-1 ${
+                                isCatSelected ? 'bg-indigo-500/30 text-indigo-200' : 'bg-slate-800 text-slate-500'
+                              }`}>
+                                {count}
+                              </span>
+                            </button>
                           </div>
-                          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded flex-shrink-0 ${
-                            isSelected ? 'bg-indigo-500/30 text-indigo-200' : 'bg-slate-900/60 text-slate-500'
-                          }`}>
-                            {count}
-                          </span>
-                        </button>
+
+                          {/* 點開後顯示的子分類清單 */}
+                          {isExpanded && (
+                            <div className="pl-4 pr-1 py-1 space-y-0.5 border-l border-indigo-500/30 ml-3">
+                              {subList.map(subItem => {
+                                const subKey = `${name}::${subItem.name}`;
+                                const isSubSelected = selectedSubCategories.includes(subKey);
+
+                                return (
+                                  <button
+                                    key={subKey}
+                                    onClick={() => toggleSubCategory(name, subItem.name)}
+                                    className={`w-full flex items-center justify-between px-2 py-1 rounded-md text-xs transition ${
+                                      isSubSelected 
+                                        ? 'bg-indigo-500/30 text-indigo-200 font-semibold border border-indigo-500/50 shadow-sm' 
+                                        : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-1.5 truncate">
+                                      <span className="text-slate-600 text-[10px]">└</span>
+                                      <IconFileText size={11} className={isSubSelected ? 'text-indigo-300' : 'text-slate-500'} />
+                                      <span className="truncate">{subItem.name}</span>
+                                      {isSubSelected && <IconCheck size={10} className="text-indigo-300 flex-shrink-0" />}
+                                    </div>
+                                    <span className={`text-[10px] font-mono px-1 py-0.2 rounded ${
+                                      isSubSelected ? 'bg-indigo-400/30 text-indigo-200' : 'text-slate-500'
+                                    }`}>
+                                      {subItem.count}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
                       );
                     })}
                   </div>
@@ -1254,6 +1395,18 @@ function doPost(e) {
                         <button onClick={() => toggleCategory(cat)} className="hover:text-white" title="移除標籤"><IconX size={11} /></button>
                       </span>
                     ))}
+
+                    {/* 子分類標籤 */}
+                    {selectedSubCategories.map(subKey => {
+                      const [cat, sub] = subKey.split('::');
+                      return (
+                        <span key={subKey} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-600/30 text-indigo-200 border border-indigo-400/50 text-[11px] shadow-sm">
+                          <span className="text-indigo-400 font-mono text-[10px]">{cat} &gt;</span>
+                          <span className="font-semibold">{sub}</span>
+                          <button onClick={() => toggleSubCategory(cat, sub)} className="hover:text-white ml-0.5" title="移除子分類標籤"><IconX size={11} /></button>
+                        </span>
+                      );
+                    })}
 
                     {/* 機構標籤 (顯示所屬專屬色系) */}
                     {selectedOrgs.map(org => {
@@ -1571,11 +1724,23 @@ function doPost(e) {
                         <label className="block text-slate-300 mb-1 font-semibold">子分類</label>
                         <input 
                           type="text" 
-                          placeholder="例如: 消毒照片"
+                          list="subcategory-suggestions"
+                          placeholder="例如: 消毒照片 (無則留空)"
                           value={newRecordForm.subCategory}
                           onChange={(e) => setNewRecordForm({ ...newRecordForm, subCategory: e.target.value })}
                           className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-blue-500"
                         />
+                        <datalist id="subcategory-suggestions">
+                          {(() => {
+                            const curCat = categoryHierarchy.find(c => c.name === newRecordForm.category);
+                            if (curCat && curCat.hasSub) {
+                              return curCat.subList.map(s => (
+                                <option key={s.name} value={s.name} />
+                              ));
+                            }
+                            return null;
+                          })()}
+                        </datalist>
                       </div>
                       <div>
                         <label className="block text-slate-300 mb-1 font-semibold">民國年份</label>

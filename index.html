@@ -1216,7 +1216,7 @@ function doPost(e) {
                               }`}
                             >
                               <div className="flex items-center gap-1.5">
-                                <span>民國 {rocYear} 年 ({adYear})</span>
+                                <span>民國 {rocYear} 年</span>
                                 {isYearSelected && <IconCheck size={11} className="text-blue-400" />}
                               </div>
                               <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
@@ -1521,8 +1521,8 @@ function doPost(e) {
                           {/* 底部元數據與操作按鈕 */}
                           <div className="pt-2.5 border-t border-slate-700/50 space-y-2 text-[10px]">
                             <div className="flex justify-between items-center text-slate-400">
-                              <span className="flex items-center gap-1 font-mono">
-                                <IconCalendar size={11} /> 115_{item.month} ({item.adYear})
+                              <span className="flex items-center gap-1 font-mono text-slate-300 font-medium">
+                                <IconCalendar size={11} /> {item.rocYear}_{item.month}
                               </span>
                               <span className="text-slate-500 truncate max-w-[90px]" title={item.uploader}>
                                 {item.uploader}
@@ -1570,7 +1570,7 @@ function doPost(e) {
                             <th className="py-3 px-4 font-semibold">檔案名稱</th>
                             <th className="py-3 px-4 font-semibold">檔案分類</th>
                             <th className="py-3 px-4 font-semibold">子分類</th>
-                            <th className="py-3 px-4 font-semibold">年月 (民國/西元)</th>
+                            <th className="py-3 px-4 font-semibold">民國年月</th>
                             <th className="py-3 px-4 font-semibold">上傳者</th>
                             <th className="py-3 px-4 font-semibold text-right">操作</th>
                           </tr>
@@ -1646,9 +1646,8 @@ function doPost(e) {
                                 </td>
 
                                 {/* 年月份 */}
-                                <td className="py-2.5 px-4 whitespace-nowrap font-mono text-[11px] text-slate-400">
-                                  <span>115_{item.month}</span>
-                                  <span className="text-slate-600 ml-1">({item.adYear})</span>
+                                <td className="py-2.5 px-4 whitespace-nowrap font-mono text-[11px] text-slate-300 font-medium">
+                                  <span>{item.rocYear}_{item.month}</span>
                                 </td>
 
                                 {/* 上傳者 */}

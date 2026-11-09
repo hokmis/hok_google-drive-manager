@@ -351,6 +351,7 @@
         // Modal 狀態
         const [isAddModalOpen, setIsAddModalOpen] = useState(false);
         const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+        const [isChangelogModalOpen, setIsChangelogModalOpen] = useState(false);
         const [copySuccess, setCopySuccess] = useState(false);
 
         // 新增紀錄表單狀態
@@ -905,7 +906,13 @@ function doPost(e) {
                   <div>
                     <h1 className="font-bold text-base text-slate-100 flex items-center gap-1.5 leading-snug">
                       <span>清福檔案庫</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-mono">v2.3</span>
+                      <button
+                        onClick={() => setIsChangelogModalOpen(true)}
+                        title="點擊查看系統更新版本紀錄"
+                        className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 hover:text-blue-300 transition font-mono border border-blue-500/30 cursor-pointer"
+                      >
+                        v3.0
+                      </button>
                     </h1>
                     <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-1">
                       <span className={`w-2 h-2 rounded-full ${isLoading ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`} />
@@ -2227,6 +2234,156 @@ function doPost(e) {
                       className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium"
                     >
                       套用並重新載入
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Modal: 版本更新紀錄 (Changelog) */}
+            {isChangelogModalOpen && (
+              <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl p-6 space-y-4 text-xs max-h-[85vh] flex flex-col shadow-2xl">
+                  {/* Header */}
+                  <div className="flex justify-between items-center border-b border-slate-800 pb-3 flex-shrink-0">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-blue-500/20 text-blue-400 rounded-lg">
+                        <IconFolder size={18} />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-sm text-slate-100 flex items-center gap-2">
+                          <span>清福檔案庫 - 版本更新紀錄</span>
+                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-400 font-mono">v3.0</span>
+                        </h3>
+                        <p className="text-[11px] text-slate-400 mt-0.5">完整記錄系統演進與各版本功能變更清單</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setIsChangelogModalOpen(false)} 
+                      className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition"
+                    >
+                      <IconX size={16} />
+                    </button>
+                  </div>
+
+                  {/* 內容區塊 */}
+                  <div className="overflow-y-auto custom-scrollbar pr-2 space-y-4 flex-1">
+                    
+                    {/* v3.0 */}
+                    <div className="bg-slate-950/60 p-4 rounded-xl border border-blue-500/30 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-blue-300 text-xs flex items-center gap-1.5">
+                          <span className="px-2 py-0.5 rounded bg-blue-600 text-white font-mono text-[10px]">v3.0</span>
+                          <span>多檔案選取與排程批量下載</span>
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-mono">2026-11-09 (最新版本)</span>
+                      </div>
+                      <ul className="list-disc pl-4 space-y-1 text-slate-300 text-[11px] leading-relaxed">
+                        <li><b>雙視圖檔案多選</b>：方框式卡片左上角加入 Checkbox（選取發光高亮）；清單式表格每列加入勾選框。</li>
+                        <li><b>快捷全選控制</b>：支援「全選本頁」與「全選所有結果（跨頁全選）」。</li>
+                        <li><b>排程批量下載</b>：底部自動彈出懸浮操作列，以 800ms 間隔依序平穩下載檔案，解決瀏覽器彈窗封鎖與 CORS 跨域限制，並即時回饋下載進度。</li>
+                      </ul>
+                    </div>
+
+                    {/* v2.7 */}
+                    <div className="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">v2.7</span>
+                          <span>純民國年月呈現</span>
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-mono">2026-10-15</span>
+                      </div>
+                      <ul className="list-disc pl-4 space-y-1 text-slate-400 text-[11px]">
+                        <li>表格表頭更新為「民國年月」，移除卡片與表格中西元年括號（如 <code>(2026)</code>），統一為純民國年月（如 <code>115_06</code>）。</li>
+                        <li>側邊欄年份分類簡化為「民國 115 年」。</li>
+                      </ul>
+                    </div>
+
+                    {/* v2.6 */}
+                    <div className="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">v2.6</span>
+                          <span>雙模式切換與品牌重構</span>
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-mono">2026-10-14</span>
+                      </div>
+                      <ul className="list-disc pl-4 space-y-1 text-slate-400 text-[11px]">
+                        <li><b>顯示方式切換</b>：新增「方框式（每頁 24 筆）」與「清單式（每頁 30 筆）」雙視圖切換，並自動保存偏好。</li>
+                        <li><b>企業品牌識別</b>：系統更名為「清福檔案庫」，引入大尺寸專屬 Logo 與分頁 Favicon。</li>
+                      </ul>
+                    </div>
+
+                    {/* v2.5 */}
+                    <div className="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">v2.5</span>
+                          <span>介面簡潔化與權限收攏</span>
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-mono">2026-10-14</span>
+                      </div>
+                      <ul className="list-disc pl-4 space-y-1 text-slate-400 text-[11px]">
+                        <li>隱藏齒輪設定圖示，移除星號收藏、CSV 匯出、Google 外部按鈕與手動新增紀錄按鈕，介面更乾淨專業。</li>
+                      </ul>
+                    </div>
+
+                    {/* v2.4 */}
+                    <div className="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">v2.4</span>
+                          <span>D 欄子分類階層化細分</span>
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-mono">2026-10-14</span>
+                      </div>
+                      <ul className="list-disc pl-4 space-y-1 text-slate-400 text-[11px]">
+                        <li>根據試算表 D 欄自動分析階層，有子分類之類別（如消毒資料、合約）支援點開展開細分子選單。</li>
+                        <li>無子分類之類別（如驗水資料、清洗紀錄）自動維持單純按鈕樣式。</li>
+                      </ul>
+                    </div>
+
+                    {/* v2.3 */}
+                    <div className="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">v2.3</span>
+                          <span>23 個機構專屬獨立顏色徽章</span>
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-mono">2026-10-14</span>
+                      </div>
+                      <ul className="list-disc pl-4 space-y-1 text-slate-400 text-[11px]">
+                        <li>配置 23 種獨立絕不重複的顏色徽章，並於檔案卡片中大幅放大與增強清晰度。</li>
+                      </ul>
+                    </div>
+
+                    {/* v2.0 ~ v2.2 */}
+                    <div className="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">v2.0 ~ v2.2</span>
+                          <span>機構二級分組、多選篩選與即時同步</span>
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-mono">2026-10-14</span>
+                      </div>
+                      <ul className="list-disc pl-4 space-y-1 text-slate-400 text-[11px]">
+                        <li><b>v2.2</b>：機構分類為「本館」與「新館」，支援分組折疊與一鍵全選。</li>
+                        <li><b>v2.1</b>：年份 + 機構 + 分類跨維度複合標籤多選篩選器。</li>
+                        <li><b>v2.0</b>：以 JSONP 即時串接 Google 試算表（1,700+ 筆資料），零延遲同步。</li>
+                      </ul>
+                    </div>
+
+                  </div>
+
+                  {/* Footer */}
+                  <div className="flex justify-end pt-3 border-t border-slate-800 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setIsChangelogModalOpen(false)}
+                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-medium transition"
+                    >
+                      關閉
                     </button>
                   </div>
                 </div>

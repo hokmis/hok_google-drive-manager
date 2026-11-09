@@ -911,7 +911,7 @@ function doPost(e) {
                         title="點擊查看系統更新版本紀錄"
                         className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 hover:text-blue-300 transition font-mono border border-blue-500/30 cursor-pointer"
                       >
-                        v3.1
+                        v3.2
                       </button>
                     </h1>
                     <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-1">
@@ -935,16 +935,19 @@ function doPost(e) {
               </div>
 
               {/* 導覽與多選標籤樹狀選單 */}
-              <div className="flex-1 overflow-y-auto px-3 py-3 space-y-5 custom-scrollbar text-xs">
+              <div className="flex-1 overflow-y-auto p-3 space-y-4 custom-scrollbar text-xs">
                 
                 {/* 檔案總覽選單 */}
-                <div className="space-y-1">
-                  <div className="px-3 font-semibold text-slate-500 uppercase tracking-wider mb-1.5 text-[10px] flex items-center justify-between">
-                    <span>文檔總覽</span>
+                <div className="space-y-1.5">
+                  <div className="px-1 font-bold text-slate-400 uppercase tracking-wider text-xs flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <IconFolder size={14} className="text-blue-400" />
+                      <span>文檔總覽</span>
+                    </span>
                     {hasActiveFilters && (
                       <button 
                         onClick={clearAllFilters}
-                        className="text-[10px] text-red-400 hover:underline"
+                        className="text-xs text-red-400 hover:text-red-300 hover:underline font-medium"
                       >
                         重設篩選
                       </button>
@@ -954,200 +957,223 @@ function doPost(e) {
                   {/* 全部檔案 (點擊恢復全覽) */}
                   <button
                     onClick={clearAllFilters}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg font-medium transition ${
+                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium transition ${
                       !hasActiveFilters 
-                        ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30' 
-                        : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
+                        ? 'bg-blue-600/20 text-blue-300 border border-blue-500/40 shadow-sm' 
+                        : 'bg-slate-900/60 border border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <IconFolder size={15} className={!hasActiveFilters ? 'text-blue-400' : 'text-slate-400'} />
-                      <span>全部檔案紀錄</span>
+                    <div className="flex items-center gap-2.5">
+                      <IconFolder size={16} className={!hasActiveFilters ? 'text-blue-400' : 'text-slate-400'} />
+                      <span className="text-sm font-semibold">全部檔案紀錄</span>
                     </div>
-                    <span className="bg-slate-800 px-2 py-0.5 rounded-full text-[10px] text-slate-400 font-mono">
+                    <span className="bg-slate-800/90 border border-slate-700/60 px-2 py-0.5 rounded-full text-xs text-slate-300 font-mono font-semibold">
                       {allCombinedRecords.length}
                     </span>
                   </button>
                 </div>
 
-                {/* 維度 1：機構 / 區域分類（分組：🏛️ 本館 與 🏢 新館） */}
-                <div className="space-y-2">
-                  <div className="px-3 font-semibold text-slate-500 uppercase tracking-wider text-[10px] flex items-center justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <IconBuilding size={12} />
-                      <span>機構 / 區域分類</span>
-                    </span>
+                {/* 維度 1：【機構 / 區域分類】獨立分組大卡片 */}
+                <div className="bg-slate-900/60 rounded-2xl p-3 border border-slate-800 shadow-sm space-y-3">
+                  
+                  {/* 分組標題列 */}
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800/90">
+                    <div className="flex items-center gap-2">
+                      <span className="p-1 rounded-lg bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                        <IconBuilding size={15} />
+                      </span>
+                      <span className="text-[13px] font-bold text-slate-100 tracking-wide">
+                        機構 / 區域分類
+                      </span>
+                    </div>
                     {selectedOrgs.length > 0 && (
                       <button 
                         onClick={() => setSelectedOrgs([])}
-                        className="text-[10px] text-blue-400 hover:underline"
+                        className="text-xs text-blue-400 hover:text-blue-300 hover:underline font-medium"
                       >
-                        清除機構 ({selectedOrgs.length})
+                        清除 ({selectedOrgs.length})
                       </button>
                     )}
                   </div>
 
-                  {/* 1.1 本館分組卡片 */}
-                  <div className="bg-slate-900/60 rounded-xl p-2 border border-slate-800/80 space-y-1">
-                    <div className="flex items-center justify-between px-1.5 py-1">
-                      <button
-                        onClick={() => setExpandedGroups(prev => ({ ...prev, benGuan: !prev.benGuan }))}
-                        className="flex items-center gap-1.5 text-xs font-bold text-slate-200 hover:text-blue-300 transition"
-                      >
-                        <span className="text-sm">🏛️</span>
-                        <span>本館</span>
-                        <span className="text-[10px] text-slate-400 font-mono font-normal">
-                          ({orgGroupsData.benGuanTotal} 筆 / {orgGroupsData.benGuan.length} 區)
-                        </span>
-                      </button>
-
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => selectAllInGroup('本館')}
-                          title={isBenGuanAllSelected ? '取消全選本館' : '全選本館所有分區'}
-                          className={`text-[10px] px-1.5 py-0.5 rounded transition ${
-                            isBenGuanAllSelected 
-                              ? 'bg-blue-600 text-white font-medium' 
-                              : 'text-blue-400 hover:bg-slate-800'
-                          }`}
-                        >
-                          {isBenGuanAllSelected ? '取消全選' : '全選'}
-                        </button>
+                  {/* 本館與新館子分組列表 */}
+                  <div className="space-y-2.5">
+                    
+                    {/* 1.1 本館分組卡片 */}
+                    <div className="bg-slate-950/70 rounded-xl p-2.5 border border-slate-800/80 space-y-1.5">
+                      <div className="flex items-center justify-between px-1 py-0.5">
                         <button
                           onClick={() => setExpandedGroups(prev => ({ ...prev, benGuan: !prev.benGuan }))}
-                          className="text-slate-500 hover:text-slate-300 p-0.5"
+                          className="flex items-center gap-1.5 text-sm font-bold text-slate-100 hover:text-blue-300 transition"
                         >
-                          {expandedGroups.benGuan ? <IconChevronDown size={13} /> : <IconChevronRight size={13} />}
+                          <span className="text-base">🏛️</span>
+                          <span>本館</span>
+                          <span className="text-xs text-slate-400 font-mono font-normal">
+                            ({orgGroupsData.benGuanTotal} 筆 / {orgGroupsData.benGuan.length} 區)
+                          </span>
                         </button>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => selectAllInGroup('本館')}
+                            title={isBenGuanAllSelected ? '取消全選本館' : '全選本館所有分區'}
+                            className={`text-xs px-2 py-0.5 rounded-md font-medium transition ${
+                              isBenGuanAllSelected 
+                                ? 'bg-blue-600 text-white shadow-sm' 
+                                : 'text-blue-400 hover:bg-slate-800 border border-blue-500/30'
+                            }`}
+                          >
+                            {isBenGuanAllSelected ? '取消全選' : '全選'}
+                          </button>
+                          <button
+                            onClick={() => setExpandedGroups(prev => ({ ...prev, benGuan: !prev.benGuan }))}
+                            className="text-slate-400 hover:text-slate-200 p-1 rounded hover:bg-slate-800 transition"
+                            title={expandedGroups.benGuan ? '收合分區' : '展開分區'}
+                          >
+                            {expandedGroups.benGuan ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}
+                          </button>
+                        </div>
                       </div>
+
+                      {expandedGroups.benGuan && (
+                        <div className="space-y-1 max-h-52 overflow-y-auto custom-scrollbar pr-1 pt-1.5 border-t border-slate-800/70">
+                          {orgGroupsData.benGuan.map(({ name, count }) => {
+                            const isSelected = selectedOrgs.includes(name);
+                            const colorObj = getOrgColor(name);
+
+                            return (
+                              <button
+                                key={name}
+                                onClick={() => toggleOrg(name)}
+                                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[13px] font-medium transition ${
+                                  isSelected 
+                                    ? 'bg-blue-600/30 text-blue-200 border border-blue-500/50 shadow-sm' 
+                                    : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 truncate">
+                                  <span 
+                                    className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-1 ring-white/20 shadow-sm"
+                                    style={{ backgroundColor: colorObj.bg }}
+                                  />
+                                  <span className="truncate">{name}</span>
+                                  {isSelected && <IconCheck size={13} className="text-blue-400 flex-shrink-0" />}
+                                </div>
+                                <span className={`text-[11px] font-mono px-2 py-0.5 rounded-md flex-shrink-0 ${
+                                  isSelected ? 'bg-blue-500/40 text-blue-200 font-semibold' : 'bg-slate-850 text-slate-400'
+                                }`}>
+                                  {count}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
 
-                    {expandedGroups.benGuan && (
-                      <div className="space-y-0.5 max-h-44 overflow-y-auto custom-scrollbar pr-1 pt-1 border-t border-slate-800/60">
-                        {orgGroupsData.benGuan.map(({ name, count }) => {
-                          const isSelected = selectedOrgs.includes(name);
-                          const colorObj = getOrgColor(name);
-
-                          return (
-                            <button
-                              key={name}
-                              onClick={() => toggleOrg(name)}
-                              className={`w-full flex items-center justify-between px-2 py-1 rounded-lg text-xs font-medium transition ${
-                                isSelected 
-                                  ? 'bg-blue-600/25 text-blue-300 border border-blue-500/40 shadow-sm' 
-                                  : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
-                              }`}
-                            >
-                              <div className="flex items-center gap-2 truncate">
-                                <span 
-                                  className="w-2.5 h-2.5 rounded-full flex-shrink-0 border border-white/20 shadow-sm"
-                                  style={{ backgroundColor: colorObj.bg }}
-                                />
-                                <span className="truncate">{name}</span>
-                                {isSelected && <IconCheck size={11} className="text-blue-400 flex-shrink-0" />}
-                              </div>
-                              <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded flex-shrink-0 ${
-                                isSelected ? 'bg-blue-500/30 text-blue-200' : 'bg-slate-800 text-slate-500'
-                              }`}>
-                                {count}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 1.2 新館分組卡片 */}
-                  <div className="bg-slate-900/60 rounded-xl p-2 border border-slate-800/80 space-y-1">
-                    <div className="flex items-center justify-between px-1.5 py-1">
-                      <button
-                        onClick={() => setExpandedGroups(prev => ({ ...prev, xinGuan: !prev.xinGuan }))}
-                        className="flex items-center gap-1.5 text-xs font-bold text-slate-200 hover:text-emerald-300 transition"
-                      >
-                        <span className="text-sm">🏢</span>
-                        <span>新館</span>
-                        <span className="text-[10px] text-slate-400 font-mono font-normal">
-                          ({orgGroupsData.xinGuanTotal} 筆 / {orgGroupsData.xinGuan.length} 區)
-                        </span>
-                      </button>
-
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => selectAllInGroup('新館')}
-                          title={isXinGuanAllSelected ? '取消全選新館' : '全選新館所有分區'}
-                          className={`text-[10px] px-1.5 py-0.5 rounded transition ${
-                            isXinGuanAllSelected 
-                              ? 'bg-emerald-600 text-white font-medium' 
-                              : 'text-emerald-400 hover:bg-slate-800'
-                          }`}
-                        >
-                          {isXinGuanAllSelected ? '取消全選' : '全選'}
-                        </button>
+                    {/* 1.2 新館分組卡片 */}
+                    <div className="bg-slate-950/70 rounded-xl p-2.5 border border-slate-800/80 space-y-1.5">
+                      <div className="flex items-center justify-between px-1 py-0.5">
                         <button
                           onClick={() => setExpandedGroups(prev => ({ ...prev, xinGuan: !prev.xinGuan }))}
-                          className="text-slate-500 hover:text-slate-300 p-0.5"
+                          className="flex items-center gap-1.5 text-sm font-bold text-slate-100 hover:text-emerald-300 transition"
                         >
-                          {expandedGroups.xinGuan ? <IconChevronDown size={13} /> : <IconChevronRight size={13} />}
+                          <span className="text-base">🏢</span>
+                          <span>新館</span>
+                          <span className="text-xs text-slate-400 font-mono font-normal">
+                            ({orgGroupsData.xinGuanTotal} 筆 / {orgGroupsData.xinGuan.length} 區)
+                          </span>
                         </button>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => selectAllInGroup('新館')}
+                            title={isXinGuanAllSelected ? '取消全選新館' : '全選新館所有分區'}
+                            className={`text-xs px-2 py-0.5 rounded-md font-medium transition ${
+                              isXinGuanAllSelected 
+                                ? 'bg-emerald-600 text-white shadow-sm' 
+                                : 'text-emerald-400 hover:bg-slate-800 border border-emerald-500/30'
+                            }`}
+                          >
+                            {isXinGuanAllSelected ? '取消全選' : '全選'}
+                          </button>
+                          <button
+                            onClick={() => setExpandedGroups(prev => ({ ...prev, xinGuan: !prev.xinGuan }))}
+                            className="text-slate-400 hover:text-slate-200 p-1 rounded hover:bg-slate-800 transition"
+                            title={expandedGroups.xinGuan ? '收合分區' : '展開分區'}
+                          >
+                            {expandedGroups.xinGuan ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}
+                          </button>
+                        </div>
                       </div>
+
+                      {expandedGroups.xinGuan && (
+                        <div className="space-y-1 max-h-52 overflow-y-auto custom-scrollbar pr-1 pt-1.5 border-t border-slate-800/70">
+                          {orgGroupsData.xinGuan.map(({ name, count }) => {
+                            const isSelected = selectedOrgs.includes(name);
+                            const colorObj = getOrgColor(name);
+
+                            return (
+                              <button
+                                key={name}
+                                onClick={() => toggleOrg(name)}
+                                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[13px] font-medium transition ${
+                                  isSelected 
+                                    ? 'bg-emerald-600/30 text-emerald-200 border border-emerald-500/50 shadow-sm' 
+                                    : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 truncate">
+                                  <span 
+                                    className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-1 ring-white/20 shadow-sm"
+                                    style={{ backgroundColor: colorObj.bg }}
+                                  />
+                                  <span className="truncate">{name}</span>
+                                  {isSelected && <IconCheck size={13} className="text-emerald-400 flex-shrink-0" />}
+                                </div>
+                                <span className={`text-[11px] font-mono px-2 py-0.5 rounded-md flex-shrink-0 ${
+                                  isSelected ? 'bg-emerald-500/40 text-emerald-200 font-semibold' : 'bg-slate-850 text-slate-400'
+                                }`}>
+                                  {count}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
 
-                    {expandedGroups.xinGuan && (
-                      <div className="space-y-0.5 max-h-44 overflow-y-auto custom-scrollbar pr-1 pt-1 border-t border-slate-800/60">
-                        {orgGroupsData.xinGuan.map(({ name, count }) => {
-                          const isSelected = selectedOrgs.includes(name);
-                          const colorObj = getOrgColor(name);
-
-                          return (
-                            <button
-                              key={name}
-                              onClick={() => toggleOrg(name)}
-                              className={`w-full flex items-center justify-between px-2 py-1 rounded-lg text-xs font-medium transition ${
-                                isSelected 
-                                  ? 'bg-emerald-600/25 text-emerald-300 border border-emerald-500/40 shadow-sm' 
-                                  : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
-                              }`}
-                            >
-                              <div className="flex items-center gap-2 truncate">
-                                <span 
-                                  className="w-2.5 h-2.5 rounded-full flex-shrink-0 border border-white/20 shadow-sm"
-                                  style={{ backgroundColor: colorObj.bg }}
-                                />
-                                <span className="truncate">{name}</span>
-                                {isSelected && <IconCheck size={11} className="text-emerald-400 flex-shrink-0" />}
-                              </div>
-                              <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded flex-shrink-0 ${
-                                isSelected ? 'bg-emerald-500/30 text-emerald-200' : 'bg-slate-800 text-slate-500'
-                              }`}>
-                                {count}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
                   </div>
                 </div>
 
-                {/* 維度 2：檔案類別分類 (階層細分支援：有子分類者可點開展開，無子分類者保持原樣) */}
-                <div>
-                  <div className="px-3 font-semibold text-slate-500 uppercase tracking-wider mb-1.5 text-[10px] flex items-center justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <IconTag size={12} />
-                      <span>檔案類別 ({categoryHierarchy.length})</span>
-                    </span>
+                {/* 維度 2：【檔案類別】獨立分組大卡片 */}
+                <div className="bg-slate-900/60 rounded-2xl p-3 border border-slate-800 shadow-sm space-y-3">
+                  
+                  {/* 分組標題列 */}
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800/90">
+                    <div className="flex items-center gap-2">
+                      <span className="p-1 rounded-lg bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
+                        <IconTag size={15} />
+                      </span>
+                      <span className="text-[13px] font-bold text-slate-100 tracking-wide">
+                        檔案類別
+                      </span>
+                      <span className="text-xs px-1.5 py-0.2 rounded-full bg-slate-800 border border-slate-700/60 text-slate-400 font-mono">
+                        {categoryHierarchy.length}
+                      </span>
+                    </div>
                     {(selectedCategories.length > 0 || selectedSubCategories.length > 0) && (
                       <button 
                         onClick={() => { setSelectedCategories([]); setSelectedSubCategories([]); }}
-                        className="text-[10px] text-indigo-400 hover:underline"
+                        className="text-xs text-indigo-400 hover:text-indigo-300 hover:underline font-medium"
                       >
-                        清除類別 ({selectedCategories.length + selectedSubCategories.length})
+                        清除 ({selectedCategories.length + selectedSubCategories.length})
                       </button>
                     )}
                   </div>
 
-                  <div className="space-y-1">
+                  {/* 類別清單列表 */}
+                  <div className="space-y-1.5">
                     {categoryHierarchy.map((catItem) => {
                       const { name, count, hasSub, subList } = catItem;
                       const isCatSelected = selectedCategories.includes(name);
@@ -1159,19 +1185,19 @@ function doPost(e) {
                           <button
                             key={name}
                             onClick={() => toggleCategory(name)}
-                            className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition ${
+                            className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition ${
                               isCatSelected 
-                                ? 'bg-indigo-600/25 text-indigo-200 border border-indigo-500/40 shadow-sm' 
-                                : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-200'
+                                ? 'bg-indigo-600/30 text-indigo-200 border border-indigo-500/50 shadow-sm' 
+                                : 'bg-slate-950/60 border border-slate-850 text-slate-300 hover:bg-slate-800/80 hover:text-white'
                             }`}
                           >
-                            <div className="flex items-center gap-2 truncate">
-                              <IconFileText size={13} className={isCatSelected ? 'text-indigo-400' : 'text-slate-500'} />
+                            <div className="flex items-center gap-2.5 truncate">
+                              <IconFileText size={15} className={isCatSelected ? 'text-indigo-400' : 'text-slate-400'} />
                               <span className="truncate">{name}</span>
-                              {isCatSelected && <IconCheck size={11} className="text-indigo-400 flex-shrink-0" />}
+                              {isCatSelected && <IconCheck size={13} className="text-indigo-400 flex-shrink-0" />}
                             </div>
-                            <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded flex-shrink-0 ${
-                              isCatSelected ? 'bg-indigo-500/30 text-indigo-200' : 'bg-slate-900/60 text-slate-500'
+                            <span className={`text-[11px] font-mono px-2 py-0.5 rounded-md flex-shrink-0 ${
+                              isCatSelected ? 'bg-indigo-500/40 text-indigo-200 font-semibold' : 'bg-slate-900 text-slate-400'
                             }`}>
                               {count}
                             </span>
@@ -1183,39 +1209,39 @@ function doPost(e) {
                       const selectedSubCount = subList.filter(s => selectedSubCategories.includes(`${name}::${s.name}`)).length;
 
                       return (
-                        <div key={name} className="space-y-0.5 bg-slate-900/40 rounded-xl p-1 border border-slate-800/60">
+                        <div key={name} className="space-y-1 bg-slate-950/70 rounded-xl p-1.5 border border-slate-850">
                           <div className="flex items-center gap-1">
                             {/* 展開/收合子分類箭頭 */}
                             <button
                               onClick={() => toggleCategoryExpand(name)}
-                              className="p-1 text-slate-500 hover:text-slate-300 rounded hover:bg-slate-800 transition flex-shrink-0"
+                              className="p-1 text-slate-400 hover:text-slate-200 rounded hover:bg-slate-800 transition flex-shrink-0"
                               title={isExpanded ? '收合子分類' : '點開展開子分類'}
                             >
-                              {isExpanded ? <IconChevronDown size={13} /> : <IconChevronRight size={13} />}
+                              {isExpanded ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}
                             </button>
 
                             {/* 類別主項目 (點擊可多選整類) */}
                             <button
                               onClick={() => toggleCategory(name)}
-                              className={`flex-1 flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-medium transition truncate ${
+                              className={`flex-1 flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[13px] font-semibold transition truncate ${
                                 isCatSelected 
-                                  ? 'bg-indigo-600/25 text-indigo-200 border border-indigo-500/40 font-semibold shadow-sm' 
-                                  : 'text-slate-300 hover:bg-slate-800/60'
+                                  ? 'bg-indigo-600/30 text-indigo-200 border border-indigo-500/50 shadow-sm' 
+                                  : 'text-slate-200 hover:bg-slate-800/60 hover:text-white'
                               }`}
                               title={`點擊全選「${name}」全部檔案`}
                             >
-                              <div className="flex items-center gap-1.5 truncate">
-                                <IconFolder size={13} className={isCatSelected ? 'text-indigo-400' : 'text-slate-400'} />
+                              <div className="flex items-center gap-2 truncate">
+                                <IconFolder size={15} className={isCatSelected ? 'text-indigo-400' : 'text-slate-400'} />
                                 <span className="truncate">{name}</span>
-                                {isCatSelected && <IconCheck size={11} className="text-indigo-400 flex-shrink-0" />}
+                                {isCatSelected && <IconCheck size={13} className="text-indigo-400 flex-shrink-0" />}
                                 {selectedSubCount > 0 && !isCatSelected && (
-                                  <span className="text-[10px] px-1 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-mono">
+                                  <span className="text-[11px] px-1.5 py-0.2 rounded bg-indigo-500/25 text-indigo-300 font-mono font-medium">
                                     選 {selectedSubCount}
                                   </span>
                                 )}
                               </div>
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono flex-shrink-0 ml-1 ${
-                                isCatSelected ? 'bg-indigo-500/30 text-indigo-200' : 'bg-slate-800 text-slate-500'
+                              <span className={`text-[11px] px-2 py-0.5 rounded-md font-mono flex-shrink-0 ml-1 ${
+                                isCatSelected ? 'bg-indigo-500/40 text-indigo-200' : 'bg-slate-900 text-slate-400'
                               }`}>
                                 {count}
                               </span>
@@ -1224,7 +1250,7 @@ function doPost(e) {
 
                           {/* 點開後顯示的子分類清單 */}
                           {isExpanded && (
-                            <div className="pl-4 pr-1 py-1 space-y-0.5 border-l border-indigo-500/30 ml-3">
+                            <div className="pl-4 pr-1 py-1 space-y-1 border-l-2 border-indigo-500/30 ml-3.5">
                               {subList.map(subItem => {
                                 const subKey = `${name}::${subItem.name}`;
                                 const isSubSelected = selectedSubCategories.includes(subKey);
@@ -1233,20 +1259,20 @@ function doPost(e) {
                                   <button
                                     key={subKey}
                                     onClick={() => toggleSubCategory(name, subItem.name)}
-                                    className={`w-full flex items-center justify-between px-2 py-1 rounded-md text-xs transition ${
+                                    className={`w-full flex items-center justify-between px-2.5 py-1 rounded-md text-xs transition ${
                                       isSubSelected 
                                         ? 'bg-indigo-500/30 text-indigo-200 font-semibold border border-indigo-500/50 shadow-sm' 
-                                        : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                                        : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
                                     }`}
                                   >
-                                    <div className="flex items-center gap-1.5 truncate">
-                                      <span className="text-slate-600 text-[10px]">└</span>
-                                      <IconFileText size={11} className={isSubSelected ? 'text-indigo-300' : 'text-slate-500'} />
-                                      <span className="truncate">{subItem.name}</span>
-                                      {isSubSelected && <IconCheck size={10} className="text-indigo-300 flex-shrink-0" />}
+                                    <div className="flex items-center gap-2 truncate">
+                                      <span className="text-slate-500 text-[11px] font-mono">└</span>
+                                      <IconFileText size={12} className={isSubSelected ? 'text-indigo-300' : 'text-slate-400'} />
+                                      <span className="truncate text-xs">{subItem.name}</span>
+                                      {isSubSelected && <IconCheck size={11} className="text-indigo-300 flex-shrink-0" />}
                                     </div>
-                                    <span className={`text-[10px] font-mono px-1 py-0.2 rounded ${
-                                      isSubSelected ? 'bg-indigo-400/30 text-indigo-200' : 'text-slate-500'
+                                    <span className={`text-[11px] font-mono px-1.5 py-0.2 rounded ${
+                                      isSubSelected ? 'bg-indigo-400/40 text-indigo-100 font-semibold' : 'text-slate-400'
                                     }`}>
                                       {subItem.count}
                                     </span>
@@ -1260,6 +1286,8 @@ function doPost(e) {
                     })}
                   </div>
                 </div>
+
+              </div>
 
               </div>
 
@@ -2307,16 +2335,31 @@ function doPost(e) {
                   {/* 內容區塊 */}
                   <div className="overflow-y-auto custom-scrollbar pr-2 space-y-4 flex-1">
                     
-                    {/* v3.1 */}
+                    {/* v3.2 */}
                     <div className="bg-slate-950/60 p-4 rounded-xl border border-blue-500/30 space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-blue-300 text-xs flex items-center gap-1.5">
-                          <span className="px-2 py-0.5 rounded bg-blue-600 text-white font-mono text-[10px]">v3.1</span>
-                          <span>頂部年份月份折疊篩選列</span>
+                          <span className="px-2 py-0.5 rounded bg-blue-600 text-white font-mono text-[10px]">v3.2</span>
+                          <span>側邊欄分組重構與字體放大強化</span>
                         </span>
                         <span className="text-[10px] text-slate-500 font-mono">2026-11-09 (最新版本)</span>
                       </div>
                       <ul className="list-disc pl-4 space-y-1 text-slate-300 text-[11px] leading-relaxed">
+                        <li><b>明確獨立雙分組卡片</b>：「機構 / 區域分類」與「檔案類別」採用獨立的大卡片容器與清晰外框邊界，視覺分組一目了然。</li>
+                        <li><b>全局文字放大與清晰度提升</b>：分組標題、本館/新館項目、主類別與子類別名稱全面放大 1~2 級（13px~14px），數字符號對比增強，提升閱讀舒適度。</li>
+                      </ul>
+                    </div>
+
+                    {/* v3.1 */}
+                    <div className="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">v3.1</span>
+                          <span>頂部年份月份折疊篩選列</span>
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-mono">2026-11-09</span>
+                      </div>
+                      <ul className="list-disc pl-4 space-y-1 text-slate-400 text-[11px] leading-relaxed">
                         <li><b>整合至標題 Banner</b>：將年月份篩選器自側邊欄移入頂部資訊列，釋放側邊欄垂直滾動空間，分類瀏覽更流暢。</li>
                         <li><b>折疊式月份展示</b>：一般預設僅展示各年份按鈕（民國 115 年、114 年...）；點擊年份即時展開該年份的所有月份按鈕與「全選該年」快捷鍵，再次點擊即可收合。</li>
                         <li><b>完整多選連動</b>：與機構、分類篩選完整複合過濾，並支援一鍵重設年月份。</li>

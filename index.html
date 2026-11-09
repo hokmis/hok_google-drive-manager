@@ -332,6 +332,10 @@
         const [expandedGroups, setExpandedGroups] = useState({ benGuan: true, xinGuan: true });
         const [expandedCategories, setExpandedCategories] = useState(['消毒資料', '合約']);
 
+        // 檔案勾選與批量下載狀態
+        const [selectedFileIds, setSelectedFileIds] = useState([]);
+        const [batchDownloadProgress, setBatchDownloadProgress] = useState(null); // { current, total, isRunning }
+
         // 顯示方式切換狀態: 'grid' (方框式，預設) 或 'list' (清單式)
         const [viewMode, setViewMode] = useState(() => localStorage.getItem('hok_view_mode') || 'grid');
 
@@ -643,6 +647,85 @@
           const start = (currentPage - 1) * pageSize;
           return filteredRecords.slice(start, start + pageSize);
         }, [filteredRecords, currentPage]);
+
+        // 檔案勾選切換
+        const toggleFileSelection = (id) => {
+          setSelectedFileIds(prev => 
+            prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+          );
+        };
+
+        // 全選 / 取消全選目前頁面的檔案
+        const isCurrentPageAllSelected = useMemo(() => {
+          if (pagedRecords.length === 0) return false;
+          return pagedRecords.every(r => selectedFileIds.includes(r.id));
+        }, [pagedRecords, selectedFileIds]);
+
+        const toggleSelectCurrentPage = () => {
+          const currentPageIds = pagedRecords.map(r => r.id);
+          if (isCurrentPageAllSelected) {
+            setSelectedFileIds(prev => prev.filter(id => !currentPageIds.includes(id)));
+          } else {
+            setSelectedFileIds(prev => Array.from(new Set([...prev, ...currentPageIds])));
+          }
+        };
+
+        // 全選所有符合篩選條件的檔案
+        const selectAllFilteredFiles = () => {
+          const allFilteredIds = filteredRecords.map(r => r.id);
+          setSelectedFileIds(allFilteredIds);
+        };
+
+        // 清空所有選取的檔案
+        const clearFileSelection = () => {
+          setSelectedFileIds([]);
+        };
+
+        // 方案A：排程依序批量觸發下載
+        const startBatchDownload = () => {
+          const filesToDownload = allCombinedRecords.filter(r => selectedFileIds.includes(r.id) && r.downloadUrl);
+          if (filesToDownload.length === 0) {
+            alert('選取的檔案中沒有可下載的連結！');
+            return;
+          }
+
+          if (batchDownloadProgress && batchDownloadProgress.isRunning) {
+            return;
+          }
+
+          setBatchDownloadProgress({
+            current: 0,
+            total: filesToDownload.length,
+            isRunning: true
+          });
+
+          filesToDownload.forEach((file, index) => {
+            setTimeout(() => {
+              // 建立隱藏 iframe 進行下載，避免彈窗阻擋與跳轉
+              const iframe = document.createElement('iframe');
+              iframe.style.display = 'none';
+              iframe.src = file.downloadUrl;
+              document.body.appendChild(iframe);
+              setTimeout(() => {
+                if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+              }, 60000);
+
+              setBatchDownloadProgress(prev => {
+                if (!prev) return null;
+                const nextCurrent = index + 1;
+                const isFinished = nextCurrent >= filesToDownload.length;
+                if (isFinished) {
+                  setTimeout(() => setBatchDownloadProgress(null), 3000);
+                }
+                return {
+                  ...prev,
+                  current: nextCurrent,
+                  isRunning: !isFinished
+                };
+              });
+            }, index * 800); // 間隔 800ms，確保平穩不被瀏覽器封鎖
+          });
+        };
 
         // 切換星號收藏
         const toggleStar = (e, id) => {
@@ -1312,10 +1395,44 @@ function doPost(e) {
                       符合條件的紀錄：<span className="text-blue-400 font-semibold font-mono text-sm">{filteredRecords.length}</span> 筆
                       <span className="text-slate-500 ml-1.5">/ 總計 {allCombinedRecords.length} 筆</span>
                       {customRecords.length > 0 && <span className="ml-2 text-emerald-400">(含本機新增 {customRecords.length} 筆)</span>}
+                      {selectedFileIds.length > 0 && (
+                        <span className="ml-2.5 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-semibold border border-blue-500/40 text-[11px]">
+                          ✓ 已選取 {selectedFileIds.length} 個檔案
+                        </span>
+                      )}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {/* 本頁全選按鈕 */}
+                    <button
+                      onClick={toggleSelectCurrentPage}
+                      title={isCurrentPageAllSelected ? "取消勾選本頁檔案" : "勾選本頁所有檔案"}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition border ${
+                        isCurrentPageAllSelected
+                          ? 'bg-blue-600/20 border-blue-500/50 text-blue-300'
+                          : 'bg-slate-800/80 border-slate-700/80 text-slate-300 hover:bg-slate-700'
+                      }`}
+                    >
+                      <div className={`w-3.5 h-3.5 rounded flex items-center justify-center border transition ${
+                        isCurrentPageAllSelected ? 'bg-blue-600 border-blue-500' : 'border-slate-500 bg-slate-900/60'
+                      }`}>
+                        {isCurrentPageAllSelected && <IconCheck size={10} className="text-white" />}
+                      </div>
+                      <span>{isCurrentPageAllSelected ? '取消本頁全選' : '全選本頁'}</span>
+                    </button>
+
+                    {/* 篩選結果全選按鈕 */}
+                    {filteredRecords.length > pagedRecords.length && (
+                      <button
+                        onClick={selectAllFilteredFiles}
+                        title={`一次全選符合篩選條件的 ${filteredRecords.length} 筆檔案`}
+                        className="px-2.5 py-1.5 bg-slate-800/60 hover:bg-slate-700 border border-slate-700/60 rounded-xl text-xs text-slate-400 hover:text-slate-200 transition"
+                      >
+                        全選所有結果 ({filteredRecords.length})
+                      </button>
+                    )}
+
                     {/* 顯示方式切換器 (方框式 / 清單式) */}
                     <div className="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-700/80 shadow-inner">
                       <button
@@ -1461,16 +1578,35 @@ function doPost(e) {
                     {pagedRecords.map(item => {
                       const colorObj = getOrgColor(item.org);
                       const grp = item.orgGroup || getOrgGroup(item.org);
+                      const isSelected = selectedFileIds.includes(item.id);
 
                       return (
                         <div 
                           key={item.id}
-                          className="min-w-0 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 hover:border-blue-500/50 rounded-2xl p-4 transition flex flex-col justify-between group shadow-lg overflow-hidden"
+                          className={`min-w-0 bg-slate-800/50 hover:bg-slate-800 border rounded-2xl p-4 transition flex flex-col justify-between group shadow-lg overflow-hidden relative ${
+                            isSelected 
+                              ? 'border-blue-500 ring-2 ring-blue-500/30 bg-slate-800/90 shadow-blue-500/10' 
+                              : 'border-slate-700/60 hover:border-blue-500/50'
+                          }`}
                         >
                           <div>
-                            {/* 頂部列：大尺寸清晰機構顏色徽章 + 館別標籤 */}
+                            {/* 頂部列：多選 Checkbox + 館別標籤 + 機構顏色徽章 */}
                             <div className="flex items-center justify-between gap-2 mb-3">
-                              <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+                              <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                                {/* 多選 Checkbox */}
+                                <button
+                                  type="button"
+                                  onClick={() => toggleFileSelection(item.id)}
+                                  className={`w-4 h-4 rounded border flex items-center justify-center transition flex-shrink-0 ${
+                                    isSelected 
+                                      ? 'bg-blue-600 border-blue-500 text-white' 
+                                      : 'border-slate-600 bg-slate-900/80 hover:border-blue-400'
+                                  }`}
+                                  title={isSelected ? "取消選取" : "選取檔案"}
+                                >
+                                  {isSelected && <IconCheck size={11} className="text-white" />}
+                                </button>
+
                                 {/* 館別標籤 */}
                                 <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border tracking-wider flex-shrink-0 ${
                                   grp === '本館' 
@@ -1490,7 +1626,7 @@ function doPost(e) {
                                   }}
                                 >
                                   <span className="w-1.5 h-1.5 rounded-full bg-white opacity-90 shadow-sm flex-shrink-0" />
-                                  <span className="truncate max-w-[140px] drop-shadow-sm">{item.org}</span>
+                                  <span className="truncate max-w-[120px] drop-shadow-sm">{item.org}</span>
                                 </span>
                               </div>
                             </div>
@@ -1566,6 +1702,20 @@ function doPost(e) {
                       <table className="w-full text-left text-xs text-slate-300 border-collapse">
                         <thead className="bg-slate-950/90 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800 sticky top-0 z-10 select-none">
                           <tr>
+                            <th className="py-3 px-3 w-10 text-center font-semibold">
+                              <button
+                                type="button"
+                                onClick={toggleSelectCurrentPage}
+                                className={`w-4 h-4 rounded border mx-auto flex items-center justify-center transition ${
+                                  isCurrentPageAllSelected 
+                                    ? 'bg-blue-600 border-blue-500 text-white' 
+                                    : 'border-slate-600 bg-slate-900/80 hover:border-blue-400'
+                                }`}
+                                title={isCurrentPageAllSelected ? "取消全選本頁" : "全選本頁"}
+                              >
+                                {isCurrentPageAllSelected && <IconCheck size={11} className="text-white" />}
+                              </button>
+                            </th>
                             <th className="py-3 px-4 font-semibold">機構 / 館別</th>
                             <th className="py-3 px-4 font-semibold">檔案名稱</th>
                             <th className="py-3 px-4 font-semibold">檔案分類</th>
@@ -1579,12 +1729,33 @@ function doPost(e) {
                           {pagedRecords.map((item, idx) => {
                             const colorObj = getOrgColor(item.org);
                             const grp = item.orgGroup || getOrgGroup(item.org);
+                            const isSelected = selectedFileIds.includes(item.id);
 
                             return (
                               <tr 
                                 key={item.id} 
-                                className={`hover:bg-slate-800/60 transition group ${idx % 2 === 0 ? 'bg-slate-900/40' : 'bg-slate-900/10'}`}
+                                className={`transition group ${
+                                  isSelected 
+                                    ? 'bg-blue-600/15 hover:bg-blue-600/20' 
+                                    : idx % 2 === 0 ? 'bg-slate-900/40 hover:bg-slate-800/60' : 'bg-slate-900/10 hover:bg-slate-800/60'
+                                }`}
                               >
+                                {/* 勾選框 */}
+                                <td className="py-2.5 px-3 text-center">
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleFileSelection(item.id)}
+                                    className={`w-4 h-4 rounded border mx-auto flex items-center justify-center transition ${
+                                      isSelected 
+                                        ? 'bg-blue-600 border-blue-500 text-white' 
+                                        : 'border-slate-600 bg-slate-900/80 hover:border-blue-400'
+                                    }`}
+                                    title={isSelected ? "取消選取" : "選取檔案"}
+                                  >
+                                    {isSelected && <IconCheck size={11} className="text-white" />}
+                                  </button>
+                                </td>
+
                                 {/* 機構與館別 */}
                                 <td className="py-2.5 px-4 whitespace-nowrap">
                                   <div className="flex items-center gap-2">
@@ -1737,6 +1908,47 @@ function doPost(e) {
                 )}
 
               </div>
+
+              {/* 底部懸浮批量操作列 (選取檔案時顯示) */}
+              {selectedFileIds.length > 0 && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900/95 backdrop-blur-md border border-blue-500/50 rounded-2xl px-5 py-3 shadow-2xl flex items-center gap-4 text-xs animate-in fade-in slide-in-from-bottom-4 duration-200">
+                  <div className="flex items-center gap-2 pr-3 border-r border-slate-700">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
+                    <span className="text-slate-200 font-medium">
+                      已選取 <span className="font-mono text-blue-400 text-sm font-bold">{selectedFileIds.length}</span> 個檔案
+                    </span>
+                  </div>
+
+                  {/* 批量下載按鈕 */}
+                  <button
+                    onClick={startBatchDownload}
+                    disabled={batchDownloadProgress && batchDownloadProgress.isRunning}
+                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-60 text-white font-medium px-4 py-2 rounded-xl transition shadow-lg shadow-blue-500/20 active:scale-95"
+                  >
+                    {batchDownloadProgress && batchDownloadProgress.isRunning ? (
+                      <>
+                        <IconRefresh size={14} className="animate-spin" />
+                        <span>正在下載 ({batchDownloadProgress.current}/{batchDownloadProgress.total})...</span>
+                      </>
+                    ) : (
+                      <>
+                        <IconDownload size={15} />
+                        <span>批量下載 ({selectedFileIds.length})</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* 取消選取按鈕 */}
+                  <button
+                    onClick={clearFileSelection}
+                    disabled={batchDownloadProgress && batchDownloadProgress.isRunning}
+                    className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition"
+                    title="取消選取全部檔案"
+                  >
+                    <IconX size={16} />
+                  </button>
+                </div>
+              )}
 
             </main>
 

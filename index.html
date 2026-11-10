@@ -44,7 +44,7 @@
       const { useState, useMemo, useEffect, useRef } = React;
 
       // 預設試算表設定
-      const DEFAULT_SHEET_ID = "1X5-VXaa-eKAzpvGJZgzODh_hc4uvdVwkcjTFj-UWFG8";
+      const DEFAULT_SHEET_ID = "1wNNnR0PxvFlwhi_r1q0NP32KtJyv9HRGs7X6zqFMh5Y";
       const DEFAULT_SHEET_GID = "0";
 
       // 本館與新館機構清單定義
@@ -240,7 +240,7 @@
             cleanup();
             if (data && data.table && data.table.rows) {
               const rows = data.table.rows;
-              // 欄位依序：檔案ID, 檔案名稱, 檔案分類, 子分類, 檔案年份, 檔案月份, 機構/區域, 上傳檔案, 上傳者, 上傳時間, 下載連結
+              // 欄位依序：0:檔案ID, 1:檔案名稱, 2:檔案分類, 3:子分類, 4:檔案年份, 5:檔案月份, 6:機構/區域, 7:下載連結
               const parsed = rows.map((r, index) => {
                 const c = r.c || [];
                 const getVal = (idx) => {
@@ -257,9 +257,7 @@
                 const rawMonth = getVal(5) || '01';
                 const month = rawMonth.padStart(2, '0');
                 const org = getVal(6) || '未指定機構';
-                const filePath = getVal(7) || '';
-                const uploadTime = getVal(9) || '';
-                const rawDownloadUrl = getVal(10) || '';
+                const rawDownloadUrl = getVal(7) || getVal(10) || '';
 
                 // 推算西元年
                 const adYear = Number(rocYear) ? String(Number(rocYear) + 1911) : '2026';
@@ -288,8 +286,6 @@
                   adYear,
                   org,
                   orgGroup: getOrgGroup(org),
-                  filePath,
-                  uploadTime,
                   downloadUrl,
                   viewUrl,
                   driveId,
@@ -560,8 +556,7 @@
               const match = (item.name && item.name.toLowerCase().includes(q)) ||
                             (item.org && item.org.toLowerCase().includes(q)) ||
                             (item.category && item.category.toLowerCase().includes(q)) ||
-                            (item.subCategory && item.subCategory.toLowerCase().includes(q)) ||
-                            (item.filePath && item.filePath.toLowerCase().includes(q));
+                            (item.subCategory && item.subCategory.toLowerCase().includes(q));
               if (!match) return false;
             }
 

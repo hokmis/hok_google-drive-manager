@@ -830,50 +830,6 @@
           }));
         };
 
-        // 匯出 CSV 功能 (含 CSV Formula Injection 公式注入防護)
-        const exportToCsv = () => {
-          if (filteredRecords.length === 0) {
-            alert('目前無可匯出的資料！');
-            return;
-          }
-
-          // 防範 CSV Formula Injection: 若欄位開頭含有 =, +, -, @, \t, \r，自動在前方補上單引號 '
-          const sanitizeCsvCell = (val) => {
-            if (val === null || val === undefined) return '""';
-            let str = String(val);
-            if (/^[\=\+\-\@\t\r]/.test(str)) {
-              str = "'" + str;
-            }
-            return `"${str.replace(/"/g, '""')}"`;
-          };
-
-          const headers = ['檔案ID', '檔案名稱', '檔案分類', '子分類', '檔案年份', '檔案月份', '機構/區域', '館別', '上傳檔案', '上傳者', '上傳時間', '下載連結'];
-          const rows = filteredRecords.map(r => [
-            sanitizeCsvCell(r.id),
-            sanitizeCsvCell(r.name),
-            sanitizeCsvCell(r.category),
-            sanitizeCsvCell(r.subCategory),
-            sanitizeCsvCell(r.rocYear),
-            sanitizeCsvCell(r.month),
-            sanitizeCsvCell(r.org),
-            sanitizeCsvCell(r.orgGroup),
-            sanitizeCsvCell(r.filePath),
-            sanitizeCsvCell(r.uploader),
-            sanitizeCsvCell(r.uploadTime),
-            sanitizeCsvCell(r.downloadUrl)
-          ]);
-
-          const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.setAttribute('href', url);
-          link.setAttribute('download', `雲端硬碟文檔清單_${new Date().toISOString().slice(0, 10)}.csv`);
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        };
-
         // 複製 Apps Script 程式碼
         const copyAppsScript = () => {
           const code = `// Google Apps Script 試算表自動寫入腳本
@@ -2368,7 +2324,7 @@ function doPost(e) {
                       </div>
                       <ul className="list-disc pl-4 space-y-1 text-slate-300 text-[11px] leading-relaxed">
                         <li><b>URL 白名單嚴格過濾</b>：全面檢驗 Google Drive 預覽與下載連結，強制限定 HTTPS 安全協定，徹底封鎖 <code>javascript:</code> 偽協定與 DOM-based XSS 攻擊路徑。</li>
-                        <li><b>CSV 匯出公式注入防護</b>：針對匯出欄位開頭符號（<code>=</code>, <code>+</code>, <code>-</code>, <code>@</code> 等）自動進行單引號消毒，防範 Excel 公式注入（CSV Formula Injection）。</li>
+                        <li><b>縮減攻擊面</b>：徹底移除未使用的「CSV 匯出」功能，消除公式注入（Formula Injection）潛在威脅，使前端代碼更精純。</li>
                         <li><b>內容安全政策（CSP）標頭防護</b>：加入嚴格的 CSP 政策，限制僅允許 Google 與受信任的 CDN 載入腳本與資源，防止惡意注入。</li>
                         <li><b>安全開窗隔離</b>：全站外部超連結升級為 <code>rel="noopener noreferrer"</code>，防範反向視窗劫持（Tabnabbing）。</li>
                       </ul>

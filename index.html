@@ -490,7 +490,11 @@
             .map(rocYear => ({
               rocYear,
               adYear: String(Number(rocYear) + 1911),
-              months: Array.from(tree[rocYear]).sort((a, b) => b.localeCompare(a))
+              months: Array.from(tree[rocYear]).sort((a, b) => {
+                const mA = Number(a.split('-')[1]) || 0;
+                const mB = Number(b.split('-')[1]) || 0;
+                return mA - mB;
+              })
             }));
         }, [allCombinedRecords]);
 
@@ -1885,7 +1889,7 @@
                       </div>
                       <ul className="list-disc pl-4 space-y-1 text-slate-700 text-[11px] leading-relaxed">
                         <li><b>放大「機構 / 區域分類」區塊</b>：提升頂部本館、新館按鈕組與展開分區標籤的字體與按鈕尺寸，點擊與檢視更清晰。</li>
-                        <li><b>機構分區固定優先排序</b>：本館固定依「清福、清氣、清心、清平、清安、清春、清日、清照、清風、清景、清山、清泉、清水、清清、清涼、護家」優先排序；新館依「一館、二館、三館、幼兒園」優先排序。</li>
+                        <li><b>機構分區與月份排序最佳化</b>：本館固定依「清福、清氣、清心、清平、清安、清春、清日、清照、清風、清景、清山、清泉、清水、清清、清涼、護家」優先排序，新館依「一館、二館、三館、幼兒園」優先排序；年份篩選中的月份改為「01 月至 12 月」由小到大排序。</li>
                         <li><b>篩選檔案區塊文字全面放大</b>：方框式卡片與清單式表格的館別、機構徽章、檔案名稱、分類、子分類、民國年月與預覽/下載按鈕全面放大 1～2 級。</li>
                       </ul>
                     </div>

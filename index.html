@@ -995,10 +995,10 @@
                         <span>機構 / 區域分類：</span>
                       </span>
 
-                      {/* 本館展開/全選複合按鈕組 */}
+                      {/* 本館展開/全選複合按鈕組 (點擊時僅展開本館，自動收合新館) */}
                       <div className="flex items-center bg-slate-50 rounded-2xl border border-slate-200/90 p-1.5 gap-1.5 shadow-sm">
                         <button
-                          onClick={() => setExpandedGroups(prev => ({ ...prev, benGuan: !prev.benGuan }))}
+                          onClick={() => setExpandedGroups(prev => ({ benGuan: !prev.benGuan, xinGuan: false }))}
                           title={`點擊${expandedGroups.benGuan ? '收合' : '展開'}本館各分區`}
                           className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-sm font-bold transition ${
                             expandedGroups.benGuan
@@ -1029,10 +1029,10 @@
                         </button>
                       </div>
 
-                      {/* 新館展開/全選複合按鈕組 */}
+                      {/* 新館展開/全選複合按鈕組 (點擊時僅展開新館，自動收合本館) */}
                       <div className="flex items-center bg-slate-50 rounded-2xl border border-slate-200/90 p-1.5 gap-1.5 shadow-sm">
                         <button
-                          onClick={() => setExpandedGroups(prev => ({ ...prev, xinGuan: !prev.xinGuan }))}
+                          onClick={() => setExpandedGroups(prev => ({ benGuan: false, xinGuan: !prev.xinGuan }))}
                           title={`點擊${expandedGroups.xinGuan ? '收合' : '展開'}新館各分區`}
                           className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-sm font-bold transition ${
                             expandedGroups.xinGuan
@@ -1297,8 +1297,9 @@
                             <button
                               key={rocYear}
                               onClick={() => {
+                                // 單一年份展開模式：點擊不同年份時切換為只展開該年份，點擊同一年份則收合
                                 setExpandedYears(prev => 
-                                  prev.includes(rocYear) ? prev.filter(y => y !== rocYear) : [...prev, rocYear]
+                                  prev.includes(rocYear) ? [] : [rocYear]
                                 );
                               }}
                               title={`點擊${isExpanded ? '收合' : '展開'}民國 ${rocYear} 年月份`}
@@ -1915,7 +1916,7 @@
                         <span className="text-[10px] text-slate-500 font-mono">2026-11-11 (最新版本)</span>
                       </div>
                       <ul className="list-disc pl-4 space-y-1 text-slate-700 text-[11px] leading-relaxed">
-                        <li><b>放大「機構 / 區域分類」區塊</b>：提升頂部本館、新館按鈕組與展開分區標籤的字體與按鈕尺寸，點擊與檢視更清晰。</li>
+                        <li><b>放大「機構 / 區域分類」區塊與單一展開模式</b>：提升頂部本館、新館按鈕組與展開分區標籤尺寸；點選不同館別或年份時，皆採「一次只展開一個篩選框」的手風琴模式，版面清爽不堆疊。</li>
                         <li><b>機構分區與月份排序最佳化</b>：本館固定依「清福、清氣、清心、清平、清安、清春、清日、清照、清風、清景、清山、清泉、清水、清清、清涼、護家」優先排序，新館依「一館、二館、三館、幼兒園」優先排序；年份篩選中的月份改為「01 月至 12 月」由小到大排序。</li>
                         <li><b>檔案清單智慧排序（子分類群組 + 民國年月由大到小）</b>：篩選結果優先將相同「子分類」歸類在一起，並依「民國年月」由大到小排序（清單式由上至下、方框式由左至右）。</li>
                         <li><b>篩選檔案區塊文字全面放大</b>：方框式卡片與清單式表格的館別、機構徽章、檔案名稱、分類、子分類、民國年月與預覽/下載按鈕全面放大 1～2 級。</li>

@@ -25,18 +25,18 @@
         height: 6px;
       }
       .custom-scrollbar::-webkit-scrollbar-track {
-        background: rgba(15, 23, 42, 0.6);
+        background: rgba(241, 245, 249, 0.8);
       }
       .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: rgba(51, 65, 85, 0.8);
+        background: rgba(203, 213, 225, 0.9);
         border-radius: 9999px;
       }
       .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: rgba(71, 85, 105, 1);
+        background: #C7000b;
       }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans antialiased overflow-hidden select-none">
+<body class="bg-[#F8FAFC] text-slate-800 font-sans antialiased overflow-hidden select-none">
     
     <div id="root" class="h-full w-full overflow-hidden"></div>
 
@@ -688,34 +688,34 @@
         const isXinGuanAllSelected = orgGroupsData.xinGuan.length > 0 && orgGroupsData.xinGuan.every(o => selectedOrgs.includes(o.name));
 
         return (
-          <div className="flex h-screen w-screen bg-slate-900 text-slate-100 font-sans overflow-hidden">
+          <div className="flex h-screen w-screen bg-[#F8FAFC] text-slate-800 font-sans overflow-hidden">
             
-            {/* 側邊導航列 (固定 320px 寬度，高雅層級) */}
-            <aside className="w-80 min-w-[320px] max-w-[320px] bg-slate-950 border-r border-slate-800 flex flex-col flex-shrink-0 h-full overflow-hidden select-none">
+            {/* 側邊導航列 (固定 320px 寬度，清福企業識別乾淨專業風格) */}
+            <aside className="w-80 min-w-[320px] max-w-[320px] bg-white border-r border-slate-200/90 flex flex-col flex-shrink-0 h-full overflow-hidden select-none shadow-[2px_0_16px_rgba(15,23,42,0.03)] z-10">
               
-              {/* Header */}
-              <div className="p-4 border-b border-slate-800 flex items-center justify-between flex-shrink-0">
+              {/* Header (頂部企業識別紅飾條) */}
+              <div className="p-4 border-b border-slate-200/80 border-t-4 border-t-[#C7000b] bg-gradient-to-b from-[#FDDDE6]/25 to-white flex items-center justify-between flex-shrink-0">
                 <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 p-1.5 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-md flex items-center justify-center flex-shrink-0 overflow-hidden ring-1 ring-slate-800">
+                  <div className="w-12 h-12 p-1.5 bg-white border border-[#F8C8DC] rounded-2xl shadow-sm flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-[#FDDDE6]/60">
                     <img 
                       src="logo.png" 
                       alt="清福檔案庫 Logo" 
-                      className="w-full h-full object-contain drop-shadow"
+                      className="w-full h-full object-contain drop-shadow-sm"
                     />
                   </div>
                   <div>
-                    <h1 className="font-bold text-base text-slate-100 flex items-center gap-1.5 leading-snug">
+                    <h1 className="font-bold text-base text-slate-900 flex items-center gap-1.5 leading-snug">
                       <span>清福檔案庫</span>
                       <button
                         onClick={() => setIsChangelogModalOpen(true)}
                         title="點擊查看系統更新版本紀錄"
-                        className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 hover:text-blue-300 transition font-mono border border-blue-500/30 cursor-pointer"
+                        className="text-[10px] px-1.5 py-0.5 rounded-md bg-[#C7000b] text-white hover:bg-[#a30009] transition font-mono shadow-sm cursor-pointer"
                       >
-                        v3.5
+                        v3.6
                       </button>
                     </h1>
-                    <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-1">
-                      <span className={`w-2 h-2 rounded-full ${isLoading ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`} />
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mt-1 font-medium">
+                      <span className={`w-2 h-2 rounded-full ${isLoading ? 'bg-[#FF531A] animate-ping' : 'bg-emerald-500'}`} />
                       <span>{isLoading ? '同步中...' : `試算表已連線 (${allCombinedRecords.length} 筆)`}</span>
                     </div>
                   </div>
@@ -723,13 +723,13 @@
               </div>
 
               {/* 快捷操作按鈕群 */}
-              <div className="p-3 border-b border-slate-800/60 flex-shrink-0">
+              <div className="p-3 border-b border-slate-100 flex-shrink-0 bg-slate-50/50">
                 <button
                   onClick={() => loadSheetRecords()}
                   disabled={isLoading}
-                  className="w-full flex items-center justify-center gap-1.5 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 py-2 px-3 rounded-xl text-xs text-slate-200 hover:text-white transition font-medium shadow-sm"
+                  className="w-full flex items-center justify-center gap-1.5 bg-white hover:bg-[#FDDDE6]/40 border border-slate-200 hover:border-[#F8C8DC] py-2 px-3 rounded-xl text-xs text-slate-700 hover:text-[#C7000b] transition font-semibold shadow-sm"
                 >
-                  <IconRefresh size={14} className={isLoading ? 'animate-spin' : ''} />
+                  <IconRefresh size={14} className={isLoading ? 'animate-spin text-[#C7000b]' : 'text-[#C7000b]'} />
                   <span>{isLoading ? '同步中...' : '重新抓取試算表'}</span>
                 </button>
               </div>
@@ -739,15 +739,15 @@
                 
                 {/* 檔案總覽選單 */}
                 <div className="space-y-1.5">
-                  <div className="px-1 font-bold text-slate-400 uppercase tracking-wider text-xs flex items-center justify-between">
+                  <div className="px-1 font-bold text-slate-500 uppercase tracking-wider text-xs flex items-center justify-between">
                     <span className="flex items-center gap-1.5">
-                      <IconFolder size={14} className="text-blue-400" />
+                      <IconFolder size={14} className="text-[#C7000b]" />
                       <span>文檔總覽</span>
                     </span>
                     {hasActiveFilters && (
                       <button 
                         onClick={clearAllFilters}
-                        className="text-xs text-red-400 hover:text-red-300 hover:underline font-medium"
+                        className="text-xs text-[#C7000b] hover:text-[#a30009] hover:underline font-semibold"
                       >
                         重設篩選
                       </button>
@@ -759,40 +759,44 @@
                     onClick={clearAllFilters}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium transition ${
                       !hasActiveFilters 
-                        ? 'bg-blue-600/20 text-blue-300 border border-blue-500/40 shadow-sm' 
-                        : 'bg-slate-900/60 border border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white'
+                        ? 'bg-[#C7000b] text-white border border-[#C7000b] shadow-md shadow-[#C7000b]/15' 
+                        : 'bg-slate-50 border border-slate-200/80 text-slate-700 hover:bg-[#FDDDE6]/40 hover:border-[#F8C8DC] hover:text-[#C7000b]'
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <IconFolder size={16} className={!hasActiveFilters ? 'text-blue-400' : 'text-slate-400'} />
-                      <span className="text-sm font-semibold">全部檔案紀錄</span>
+                      <IconFolder size={16} className={!hasActiveFilters ? 'text-white' : 'text-[#C7000b]'} />
+                      <span className="text-sm font-bold">全部檔案紀錄</span>
                     </div>
-                    <span className="bg-slate-800/90 border border-slate-700/60 px-2 py-0.5 rounded-full text-xs text-slate-300 font-mono font-semibold">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold ${
+                      !hasActiveFilters
+                        ? 'bg-white/20 text-white border border-white/30'
+                        : 'bg-white border border-slate-200 text-slate-600'
+                    }`}>
                       {allCombinedRecords.length}
                     </span>
                   </button>
                 </div>
 
                 {/* 維度：【檔案類別】獨立分組大卡片 */}
-                <div className="bg-slate-900/60 rounded-2xl p-3 border border-slate-800 shadow-sm space-y-3">
+                <div className="bg-slate-50/70 rounded-2xl p-3 border border-slate-200/80 shadow-sm space-y-3">
                   
                   {/* 分組標題列 */}
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-800/90">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-200/80">
                     <div className="flex items-center gap-2">
-                      <span className="p-1 rounded-lg bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
+                      <span className="p-1 rounded-lg bg-[#FDDDE6] text-[#C7000b] border border-[#F8C8DC]">
                         <IconTag size={15} />
                       </span>
-                      <span className="text-[13px] font-bold text-slate-100 tracking-wide">
+                      <span className="text-[13px] font-bold text-slate-800 tracking-wide">
                         檔案類別
                       </span>
-                      <span className="text-xs px-1.5 py-0.2 rounded-full bg-slate-800 border border-slate-700/60 text-slate-400 font-mono">
+                      <span className="text-xs px-1.5 py-0.2 rounded-full bg-white border border-slate-200 text-slate-500 font-mono font-semibold">
                         {categoryHierarchy.length}
                       </span>
                     </div>
                     {(selectedCategories.length > 0 || selectedSubCategories.length > 0) && (
                       <button 
                         onClick={() => { setSelectedCategories([]); setSelectedSubCategories([]); }}
-                        className="text-xs text-indigo-400 hover:text-indigo-300 hover:underline font-medium"
+                        className="text-xs text-[#C7000b] hover:text-[#a30009] hover:underline font-semibold"
                       >
                         清除 ({selectedCategories.length + selectedSubCategories.length})
                       </button>
@@ -812,19 +816,19 @@
                           <button
                             key={name}
                             onClick={() => toggleCategory(name)}
-                            className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition ${
+                            className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-semibold transition ${
                               isCatSelected 
-                                ? 'bg-indigo-600/30 text-indigo-200 border border-indigo-500/50 shadow-sm' 
-                                : 'bg-slate-950/60 border border-slate-850 text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                                ? 'bg-[#C7000b] text-white border border-[#C7000b] shadow-sm' 
+                                : 'bg-white border border-slate-200/80 text-slate-700 hover:bg-[#FDDDE6]/35 hover:border-[#F8C8DC] hover:text-[#C7000b]'
                             }`}
                           >
                             <div className="flex items-center gap-2.5 truncate">
-                              <IconFileText size={15} className={isCatSelected ? 'text-indigo-400' : 'text-slate-400'} />
+                              <IconFileText size={15} className={isCatSelected ? 'text-white' : 'text-[#C7000b]/80'} />
                               <span className="truncate">{name}</span>
-                              {isCatSelected && <IconCheck size={13} className="text-indigo-400 flex-shrink-0" />}
+                              {isCatSelected && <IconCheck size={13} className="text-white flex-shrink-0" />}
                             </div>
                             <span className={`text-[11px] font-mono px-2 py-0.5 rounded-md flex-shrink-0 ${
-                              isCatSelected ? 'bg-indigo-500/40 text-indigo-200 font-semibold' : 'bg-slate-900 text-slate-400'
+                              isCatSelected ? 'bg-white/20 text-white font-bold' : 'bg-[#FDDDE6]/60 text-[#C7000b] font-semibold'
                             }`}>
                               {count}
                             </span>
@@ -836,12 +840,12 @@
                       const selectedSubCount = subList.filter(s => selectedSubCategories.includes(`${name}::${s.name}`)).length;
 
                       return (
-                        <div key={name} className="space-y-1 bg-slate-950/70 rounded-xl p-1.5 border border-slate-850">
+                        <div key={name} className="space-y-1 bg-white rounded-xl p-1.5 border border-slate-200/90 shadow-sm">
                           <div className="flex items-center gap-1">
                             {/* 展開/收合子分類箭頭 */}
                             <button
                               onClick={() => toggleCategoryExpand(name)}
-                              className="p-1 text-slate-400 hover:text-slate-200 rounded hover:bg-slate-800 transition flex-shrink-0"
+                              className="p-1 text-slate-400 hover:text-[#C7000b] rounded hover:bg-[#FDDDE6]/40 transition flex-shrink-0"
                               title={isExpanded ? '收合子分類' : '點開展開子分類'}
                             >
                               {isExpanded ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}
@@ -850,25 +854,25 @@
                             {/* 類別主項目 (點擊可多選整類) */}
                             <button
                               onClick={() => toggleCategory(name)}
-                              className={`flex-1 flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[13px] font-semibold transition truncate ${
+                              className={`flex-1 flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[13px] font-bold transition truncate ${
                                 isCatSelected 
-                                  ? 'bg-indigo-600/30 text-indigo-200 border border-indigo-500/50 shadow-sm' 
-                                  : 'text-slate-200 hover:bg-slate-800/60 hover:text-white'
+                                  ? 'bg-[#C7000b] text-white border border-[#C7000b] shadow-sm' 
+                                  : 'text-slate-800 hover:bg-[#FDDDE6]/35 hover:text-[#C7000b]'
                               }`}
                               title={`點擊全選「${name}」全部檔案`}
                             >
                               <div className="flex items-center gap-2 truncate">
-                                <IconFolder size={15} className={isCatSelected ? 'text-indigo-400' : 'text-slate-400'} />
+                                <IconFolder size={15} className={isCatSelected ? 'text-white' : 'text-[#C7000b]'} />
                                 <span className="truncate">{name}</span>
-                                {isCatSelected && <IconCheck size={13} className="text-indigo-400 flex-shrink-0" />}
+                                {isCatSelected && <IconCheck size={13} className="text-white flex-shrink-0" />}
                                 {selectedSubCount > 0 && !isCatSelected && (
-                                  <span className="text-[11px] px-1.5 py-0.2 rounded bg-indigo-500/25 text-indigo-300 font-mono font-medium">
+                                  <span className="text-[11px] px-1.5 py-0.2 rounded bg-[#FDDDE6] text-[#C7000b] border border-[#F8C8DC] font-mono font-bold">
                                     選 {selectedSubCount}
                                   </span>
                                 )}
                               </div>
                               <span className={`text-[11px] px-2 py-0.5 rounded-md font-mono flex-shrink-0 ml-1 ${
-                                isCatSelected ? 'bg-indigo-500/40 text-indigo-200' : 'bg-slate-900 text-slate-400'
+                                isCatSelected ? 'bg-white/20 text-white font-bold' : 'bg-[#FDDDE6]/60 text-[#C7000b] font-semibold'
                               }`}>
                                 {count}
                               </span>
@@ -877,7 +881,7 @@
 
                           {/* 點開後顯示的子分類清單 */}
                           {isExpanded && (
-                            <div className="pl-4 pr-1 py-1 space-y-1 border-l-2 border-indigo-500/30 ml-3.5">
+                            <div className="pl-4 pr-1 py-1 space-y-1 border-l-2 border-[#F8C8DC] ml-3.5">
                               {subList.map(subItem => {
                                 const subKey = `${name}::${subItem.name}`;
                                 const isSubSelected = selectedSubCategories.includes(subKey);
@@ -888,18 +892,18 @@
                                     onClick={() => toggleSubCategory(name, subItem.name)}
                                     className={`w-full flex items-center justify-between px-2.5 py-1 rounded-md text-xs transition ${
                                       isSubSelected 
-                                        ? 'bg-indigo-500/30 text-indigo-200 font-semibold border border-indigo-500/50 shadow-sm' 
-                                        : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
+                                        ? 'bg-[#FDDDE6] text-[#C7000b] font-bold border border-[#F8C8DC] shadow-sm' 
+                                        : 'text-slate-600 hover:bg-[#FDDDE6]/30 hover:text-[#C7000b]'
                                     }`}
                                   >
                                     <div className="flex items-center gap-2 truncate">
-                                      <span className="text-slate-500 text-[11px] font-mono">└</span>
-                                      <IconFileText size={12} className={isSubSelected ? 'text-indigo-300' : 'text-slate-400'} />
+                                      <span className="text-[#F8C8DC] text-[11px] font-mono font-bold">└</span>
+                                      <IconFileText size={12} className={isSubSelected ? 'text-[#C7000b]' : 'text-slate-400'} />
                                       <span className="truncate text-xs">{subItem.name}</span>
-                                      {isSubSelected && <IconCheck size={11} className="text-indigo-300 flex-shrink-0" />}
+                                      {isSubSelected && <IconCheck size={11} className="text-[#C7000b] flex-shrink-0" />}
                                     </div>
                                     <span className={`text-[11px] font-mono px-1.5 py-0.2 rounded ${
-                                      isSubSelected ? 'bg-indigo-400/40 text-indigo-100 font-semibold' : 'text-slate-400'
+                                      isSubSelected ? 'bg-[#C7000b] text-white font-bold' : 'text-slate-500 bg-slate-100'
                                     }`}>
                                       {subItem.count}
                                     </span>
@@ -917,56 +921,56 @@
               </div>
 
               {/* 底部狀態列 */}
-              <div className="p-3 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between flex-shrink-0">
+              <div className="p-3 border-t border-slate-200 bg-slate-50/70 text-[11px] text-slate-500 flex items-center justify-between flex-shrink-0">
                 <span className="truncate" title={statusMessage}>{statusMessage}</span>
               </div>
 
             </aside>
 
             {/* 主內容區塊 (flex-1 min-w-0 確保卡片和排版自適應不爆版) */}
-            <main className="flex-1 min-w-0 flex flex-col h-full bg-slate-900 overflow-hidden">
+            <main className="flex-1 min-w-0 flex flex-col h-full bg-[#F8FAFC] overflow-hidden">
               
               {/* 頂部工具列 (整合「機構 / 區域分類」於搜尋欄正上方) */}
-              <header className="border-b border-slate-800 px-6 py-3 flex flex-col gap-2.5 bg-slate-900/90 backdrop-blur-md flex-shrink-0">
+              <header className="border-b border-slate-200/90 px-6 py-3 flex flex-col gap-2.5 bg-white/95 backdrop-blur-md flex-shrink-0 shadow-sm z-10">
                 
                 {/* 上層：機構 / 區域分類快速篩選區 */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5 mr-1">
-                        <span className="p-1 rounded-lg bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                      <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5 mr-1">
+                        <span className="p-1 rounded-lg bg-[#FDDDE6] text-[#C7000b] border border-[#F8C8DC]">
                           <IconBuilding size={14} />
                         </span>
                         <span>機構 / 區域分類：</span>
                       </span>
 
                       {/* 本館展開/全選複合按鈕組 */}
-                      <div className="flex items-center bg-slate-950/80 rounded-xl border border-slate-800 p-1 gap-1 shadow-sm">
+                      <div className="flex items-center bg-slate-50 rounded-xl border border-slate-200 p-1 gap-1 shadow-sm">
                         <button
                           onClick={() => setExpandedGroups(prev => ({ ...prev, benGuan: !prev.benGuan }))}
                           title={`點擊${expandedGroups.benGuan ? '收合' : '展開'}本館各分區`}
                           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition ${
                             expandedGroups.benGuan
-                              ? 'bg-blue-600/25 text-blue-200 border border-blue-500/50'
-                              : 'text-slate-200 hover:bg-slate-800 hover:text-blue-300'
+                              ? 'bg-[#FDDDE6] text-[#C7000b] border border-[#F8C8DC]'
+                              : 'text-slate-700 hover:bg-[#FDDDE6]/40 hover:text-[#C7000b]'
                           }`}
                         >
                           <span>🏛️ 本館</span>
-                          <span className="text-[11px] text-slate-400 font-mono font-normal">
+                          <span className="text-[11px] text-slate-500 font-mono font-normal">
                             ({orgGroupsData.benGuanTotal} 筆 / {orgGroupsData.benGuan.length} 區)
                           </span>
                           <IconChevronDown
                             size={13}
-                            className={`transition-transform duration-200 ${expandedGroups.benGuan ? 'rotate-180 text-blue-400' : 'text-slate-400'}`}
+                            className={`transition-transform duration-200 ${expandedGroups.benGuan ? 'rotate-180 text-[#C7000b]' : 'text-slate-400'}`}
                           />
                         </button>
                         <button
                           onClick={() => selectAllInGroup('本館')}
                           title={isBenGuanAllSelected ? '取消全選本館' : '全選本館所有分區'}
-                          className={`text-xs px-2 py-1 rounded-lg font-medium transition ${
+                          className={`text-xs px-2 py-1 rounded-lg font-semibold transition ${
                             isBenGuanAllSelected 
-                              ? 'bg-blue-600 text-white shadow-sm' 
-                              : 'text-blue-400 hover:bg-slate-800 border border-blue-500/30'
+                              ? 'bg-[#C7000b] text-white shadow-sm' 
+                              : 'text-[#C7000b] bg-white hover:bg-[#FDDDE6]/50 border border-[#F8C8DC]'
                           }`}
                         >
                           {isBenGuanAllSelected ? '取消全選' : '全選'}
@@ -974,32 +978,32 @@
                       </div>
 
                       {/* 新館展開/全選複合按鈕組 */}
-                      <div className="flex items-center bg-slate-950/80 rounded-xl border border-slate-800 p-1 gap-1 shadow-sm">
+                      <div className="flex items-center bg-slate-50 rounded-xl border border-slate-200 p-1 gap-1 shadow-sm">
                         <button
                           onClick={() => setExpandedGroups(prev => ({ ...prev, xinGuan: !prev.xinGuan }))}
                           title={`點擊${expandedGroups.xinGuan ? '收合' : '展開'}新館各分區`}
                           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition ${
                             expandedGroups.xinGuan
-                              ? 'bg-emerald-600/25 text-emerald-200 border border-emerald-500/50'
-                              : 'text-slate-200 hover:bg-slate-800 hover:text-emerald-300'
+                              ? 'bg-[#FF531A]/15 text-[#FF531A] border border-[#FF531A]/30'
+                              : 'text-slate-700 hover:bg-[#FF531A]/10 hover:text-[#FF531A]'
                           }`}
                         >
                           <span>🏢 新館</span>
-                          <span className="text-[11px] text-slate-400 font-mono font-normal">
+                          <span className="text-[11px] text-slate-500 font-mono font-normal">
                             ({orgGroupsData.xinGuanTotal} 筆 / {orgGroupsData.xinGuan.length} 區)
                           </span>
                           <IconChevronDown
                             size={13}
-                            className={`transition-transform duration-200 ${expandedGroups.xinGuan ? 'rotate-180 text-emerald-400' : 'text-slate-400'}`}
+                            className={`transition-transform duration-200 ${expandedGroups.xinGuan ? 'rotate-180 text-[#FF531A]' : 'text-slate-400'}`}
                           />
                         </button>
                         <button
                           onClick={() => selectAllInGroup('新館')}
                           title={isXinGuanAllSelected ? '取消全選新館' : '全選新館所有分區'}
-                          className={`text-xs px-2 py-1 rounded-lg font-medium transition ${
+                          className={`text-xs px-2 py-1 rounded-lg font-semibold transition ${
                             isXinGuanAllSelected 
-                              ? 'bg-emerald-600 text-white shadow-sm' 
-                              : 'text-emerald-400 hover:bg-slate-800 border border-emerald-500/30'
+                              ? 'bg-[#FF531A] text-white shadow-sm' 
+                              : 'text-[#FF531A] bg-white hover:bg-[#FF531A]/10 border border-[#FF531A]/30'
                           }`}
                         >
                           {isXinGuanAllSelected ? '取消全選' : '全選'}
@@ -1010,7 +1014,7 @@
                     {selectedOrgs.length > 0 && (
                       <button 
                         onClick={() => setSelectedOrgs([])}
-                        className="text-xs text-blue-400 hover:text-blue-300 hover:underline font-medium flex items-center gap-1"
+                        className="text-xs text-[#C7000b] hover:text-[#a30009] hover:underline font-semibold flex items-center gap-1"
                       >
                         <IconX size={12} />
                         <span>清除已選機構 ({selectedOrgs.length})</span>
@@ -1020,8 +1024,8 @@
 
                   {/* 展開之本館分區徽章列表 */}
                   {expandedGroups.benGuan && (
-                    <div className="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 flex items-center gap-1.5 flex-wrap">
-                      <span className="text-xs font-bold text-blue-300 mr-1 flex items-center gap-1">
+                    <div className="p-2.5 bg-[#FDDDE6]/25 rounded-xl border border-[#F8C8DC] flex items-center gap-1.5 flex-wrap">
+                      <span className="text-xs font-bold text-[#C7000b] mr-1 flex items-center gap-1">
                         <span>🏛️ 本館分區：</span>
                       </span>
                       {orgGroupsData.benGuan.map(({ name, count }) => {
@@ -1031,20 +1035,20 @@
                           <button
                             key={name}
                             onClick={() => toggleOrg(name)}
-                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition border ${
+                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition border ${
                               isSelected 
-                                ? 'bg-blue-600/30 text-blue-100 border-blue-500 shadow-sm' 
-                                : 'bg-slate-900/90 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
+                                ? 'bg-[#C7000b] text-white border-[#C7000b] shadow-sm' 
+                                : 'bg-white text-slate-700 border-slate-200 hover:border-[#F8C8DC] hover:bg-[#FDDDE6]/40 hover:text-[#C7000b]'
                             }`}
                           >
                             <span 
-                              className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-1 ring-white/20 shadow-sm"
+                              className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-1 ring-black/10 shadow-sm"
                               style={{ backgroundColor: colorObj.bg }}
                             />
                             <span>{name}</span>
-                            {isSelected && <IconCheck size={11} className="text-blue-400 flex-shrink-0" />}
+                            {isSelected && <IconCheck size={11} className="text-white flex-shrink-0" />}
                             <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
-                              isSelected ? 'bg-blue-500/40 text-blue-100 font-semibold' : 'bg-slate-800 text-slate-400'
+                              isSelected ? 'bg-white/20 text-white font-bold' : 'bg-slate-100 text-slate-500'
                             }`}>
                               {count}
                             </span>
@@ -1053,7 +1057,7 @@
                       })}
                       <button
                         onClick={() => setExpandedGroups(prev => ({ ...prev, benGuan: false }))}
-                        className="ml-auto text-slate-400 hover:text-slate-200 p-1 rounded hover:bg-slate-800 transition"
+                        className="ml-auto text-slate-400 hover:text-[#C7000b] p-1 rounded hover:bg-[#FDDDE6]/50 transition"
                         title="收合本館分區"
                       >
                         <IconX size={13} />
@@ -1063,8 +1067,8 @@
 
                   {/* 展開之新館分區徽章列表 */}
                   {expandedGroups.xinGuan && (
-                    <div className="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 flex items-center gap-1.5 flex-wrap">
-                      <span className="text-xs font-bold text-emerald-300 mr-1 flex items-center gap-1">
+                    <div className="p-2.5 bg-[#FF531A]/5 rounded-xl border border-[#FF531A]/25 flex items-center gap-1.5 flex-wrap">
+                      <span className="text-xs font-bold text-[#FF531A] mr-1 flex items-center gap-1">
                         <span>🏢 新館分區：</span>
                       </span>
                       {orgGroupsData.xinGuan.map(({ name, count }) => {
@@ -1074,20 +1078,20 @@
                           <button
                             key={name}
                             onClick={() => toggleOrg(name)}
-                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition border ${
+                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition border ${
                               isSelected 
-                                ? 'bg-emerald-600/30 text-emerald-100 border-emerald-500 shadow-sm' 
-                                : 'bg-slate-900/90 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
+                                ? 'bg-[#FF531A] text-white border-[#FF531A] shadow-sm' 
+                                : 'bg-white text-slate-700 border-slate-200 hover:border-[#FF531A]/40 hover:bg-[#FF531A]/10 hover:text-[#FF531A]'
                             }`}
                           >
                             <span 
-                              className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-1 ring-white/20 shadow-sm"
+                              className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-1 ring-black/10 shadow-sm"
                               style={{ backgroundColor: colorObj.bg }}
                             />
                             <span>{name}</span>
-                            {isSelected && <IconCheck size={11} className="text-emerald-400 flex-shrink-0" />}
+                            {isSelected && <IconCheck size={11} className="text-white flex-shrink-0" />}
                             <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
-                              isSelected ? 'bg-emerald-500/40 text-emerald-100 font-semibold' : 'bg-slate-800 text-slate-400'
+                              isSelected ? 'bg-white/20 text-white font-bold' : 'bg-slate-100 text-slate-500'
                             }`}>
                               {count}
                             </span>
@@ -1096,7 +1100,7 @@
                       })}
                       <button
                         onClick={() => setExpandedGroups(prev => ({ ...prev, xinGuan: false }))}
-                        className="ml-auto text-slate-400 hover:text-slate-200 p-1 rounded hover:bg-slate-800 transition"
+                        className="ml-auto text-slate-400 hover:text-[#FF531A] p-1 rounded hover:bg-[#FF531A]/15 transition"
                         title="收合新館分區"
                       >
                         <IconX size={13} />
@@ -1107,7 +1111,7 @@
 
                 {/* 下層：搜尋欄 */}
                 <div className="relative w-full max-w-md">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500">
+                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#C7000b]/70">
                     <IconSearch size={16} />
                   </div>
                   <input 
@@ -1115,10 +1119,10 @@
                     placeholder="搜尋文檔名稱、機構名稱、分類..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-slate-800 text-slate-100 placeholder-slate-500 pl-10 pr-8 py-2 rounded-xl text-xs border border-slate-700/60 focus:outline-none focus:border-blue-500 transition"
+                    className="w-full bg-slate-50 text-slate-800 placeholder-slate-400 pl-10 pr-8 py-2 rounded-xl text-xs border border-slate-200 focus:outline-none focus:bg-white focus:border-[#C7000b] focus:ring-2 focus:ring-[#FDDDE6] transition shadow-inner"
                   />
                   {searchQuery && (
-                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#C7000b]">
                       <IconX size={14} />
                     </button>
                   )}
@@ -1129,20 +1133,22 @@
               <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
                 
                 {/* 狀態標題 Banner */}
-                <div className="bg-slate-800/40 p-4 rounded-2xl border border-slate-800 flex flex-col gap-3">
+                <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col gap-3">
                   <div className="flex justify-between items-center flex-wrap gap-3">
                     <div>
-                      <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-                        <IconFolder size={18} className="text-blue-400" />
+                      <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <span className="p-1.5 rounded-xl bg-[#FDDDE6] text-[#C7000b] border border-[#F8C8DC]">
+                          <IconFolder size={17} />
+                        </span>
                         <span>
                           {hasActiveFilters ? '複合標籤篩選文檔結果' : '全部檔案紀錄清單'}
                         </span>
                       </h2>
-                      <p className="text-xs text-slate-400 mt-1">
-                        符合條件的紀錄：<span className="text-blue-400 font-semibold font-mono text-sm">{filteredRecords.length}</span> 筆
-                        <span className="text-slate-500 ml-1.5">/ 總計 {allCombinedRecords.length} 筆</span>
+                      <p className="text-xs text-slate-500 mt-1">
+                        符合條件的紀錄：<span className="text-[#C7000b] font-bold font-mono text-sm">{filteredRecords.length}</span> 筆
+                        <span className="text-slate-400 ml-1.5">/ 總計 {allCombinedRecords.length} 筆</span>
                         {selectedFileIds.length > 0 && (
-                          <span className="ml-2.5 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-semibold border border-blue-500/40 text-[11px]">
+                          <span className="ml-2.5 px-2.5 py-0.5 rounded-full bg-[#FDDDE6] text-[#C7000b] font-bold border border-[#F8C8DC] text-[11px]">
                             ✓ 已選取 {selectedFileIds.length} 個檔案
                           </span>
                         )}
@@ -1154,14 +1160,14 @@
                       <button
                         onClick={toggleSelectCurrentPage}
                         title={isCurrentPageAllSelected ? "取消勾選本頁檔案" : "勾選本頁所有檔案"}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition border ${
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition border ${
                           isCurrentPageAllSelected
-                            ? 'bg-blue-600/20 border-blue-500/50 text-blue-300'
-                            : 'bg-slate-800/80 border-slate-700/80 text-slate-300 hover:bg-slate-700'
+                            ? 'bg-[#FDDDE6] border-[#F8C8DC] text-[#C7000b]'
+                            : 'bg-white border-slate-200 text-slate-700 hover:bg-[#FDDDE6]/30 hover:border-[#F8C8DC]'
                         }`}
                       >
                         <div className={`w-3.5 h-3.5 rounded flex items-center justify-center border transition ${
-                          isCurrentPageAllSelected ? 'bg-blue-600 border-blue-500' : 'border-slate-500 bg-slate-900/60'
+                          isCurrentPageAllSelected ? 'bg-[#C7000b] border-[#C7000b]' : 'border-slate-300 bg-white'
                         }`}>
                           {isCurrentPageAllSelected && <IconCheck size={10} className="text-white" />}
                         </div>
@@ -1173,21 +1179,21 @@
                         <button
                           onClick={selectAllFilteredFiles}
                           title={`一次全選符合篩選條件的 ${filteredRecords.length} 筆檔案`}
-                          className="px-2.5 py-1.5 bg-slate-800/60 hover:bg-slate-700 border border-slate-700/60 rounded-xl text-xs text-slate-400 hover:text-slate-200 transition"
+                          className="px-2.5 py-1.5 bg-slate-50 hover:bg-[#FDDDE6]/40 border border-slate-200 hover:border-[#F8C8DC] rounded-xl text-xs text-slate-600 hover:text-[#C7000b] font-medium transition"
                         >
                           全選所有結果 ({filteredRecords.length})
                         </button>
                       )}
 
                       {/* 顯示方式切換器 (方框式 / 清單式) */}
-                      <div className="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-700/80 shadow-inner">
+                      <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
                         <button
                           onClick={() => setViewMode('grid')}
                           title="切換為方框式（卡片網格視圖）"
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
                             viewMode === 'grid'
-                              ? 'bg-blue-600 text-white shadow-sm'
-                              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                              ? 'bg-[#C7000b] text-white shadow-sm'
+                              : 'text-slate-600 hover:text-[#C7000b] hover:bg-white/70'
                           }`}
                         >
                           <IconGrid size={14} />
@@ -1196,10 +1202,10 @@
                         <button
                           onClick={() => setViewMode('list')}
                           title="切換為清單式（詳細表格視圖）"
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
                             viewMode === 'list'
-                              ? 'bg-blue-600 text-white shadow-sm'
-                              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                              ? 'bg-[#C7000b] text-white shadow-sm'
+                              : 'text-slate-600 hover:text-[#C7000b] hover:bg-white/70'
                           }`}
                         >
                           <IconList size={14} />
@@ -1210,7 +1216,7 @@
                       {hasActiveFilters && (
                         <button
                           onClick={clearAllFilters}
-                          className="text-xs text-slate-400 hover:text-slate-200 bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-xl border border-slate-700 transition flex items-center gap-1.5"
+                          className="text-xs text-[#C7000b] hover:text-white bg-[#FDDDE6]/60 hover:bg-[#C7000b] px-3 py-1.5 rounded-xl border border-[#F8C8DC] hover:border-[#C7000b] font-semibold transition flex items-center gap-1.5"
                         >
                           <IconX size={13} />
                           <span>清除所有標籤篩選</span>
@@ -1220,11 +1226,11 @@
                   </div>
 
                   {/* 年份/月份快速篩選器 (併入頂部 Banner，一般只顯示年份，點擊年份展開月份) */}
-                  <div className="w-full border-t border-slate-700/50 pt-3 space-y-2">
+                  <div className="w-full border-t border-slate-100 pt-3 space-y-2">
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5 mr-1">
-                          <IconCalendar size={13} className="text-blue-400" />
+                        <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5 mr-1">
+                          <IconCalendar size={13} className="text-[#C7000b]" />
                           <span>年份篩選：</span>
                         </span>
 
@@ -1243,23 +1249,23 @@
                                 );
                               }}
                               title={`點擊${isExpanded ? '收合' : '展開'}民國 ${rocYear} 年月份`}
-                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition border ${
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition border ${
                                 isExpanded
-                                  ? 'bg-blue-600/25 border-blue-500 text-blue-200 ring-1 ring-blue-500/40 shadow-sm'
+                                  ? 'bg-[#C7000b] border-[#C7000b] text-white ring-2 ring-[#F8C8DC] shadow-sm'
                                   : (isYearSelected || hasSelectedMonthInYear)
-                                    ? 'bg-blue-950/80 border-blue-500/50 text-blue-300'
-                                    : 'bg-slate-900/60 border-slate-700/60 text-slate-300 hover:bg-slate-800 hover:text-white'
+                                    ? 'bg-[#FDDDE6] border-[#F8C8DC] text-[#C7000b]'
+                                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-[#FDDDE6]/40 hover:border-[#F8C8DC] hover:text-[#C7000b]'
                               }`}
                             >
                               <span>民國 {rocYear} 年</span>
                               <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
-                                isExpanded || isYearSelected ? 'bg-blue-500/30 text-blue-200' : 'bg-slate-800 text-slate-400'
+                                isExpanded ? 'bg-white/20 text-white' : (isYearSelected || hasSelectedMonthInYear) ? 'bg-[#C7000b] text-white' : 'bg-white border border-slate-200 text-slate-500'
                               }`}>
                                 {totalInYear}
                               </span>
                               <IconChevronDown
                                 size={12}
-                                className={`transition-transform duration-200 ${isExpanded ? 'rotate-180 text-blue-400' : 'text-slate-400'}`}
+                                className={`transition-transform duration-200 ${isExpanded ? 'rotate-180 text-white' : 'text-slate-400'}`}
                               />
                             </button>
                           );
@@ -1269,7 +1275,7 @@
                       {(selectedYears.length > 0 || selectedMonths.length > 0) && (
                         <button
                           onClick={() => { setSelectedYears([]); setSelectedMonths([]); }}
-                          className="text-[11px] text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1"
+                          className="text-[11px] text-[#C7000b] hover:text-[#a30009] font-semibold hover:underline flex items-center gap-1"
                         >
                           <IconX size={11} />
                           <span>重設年月份</span>
@@ -1287,25 +1293,25 @@
                           const totalInYear = allCombinedRecords.filter(r => r.rocYear === expYear).length;
 
                           return (
-                            <div key={expYear} className="p-2.5 bg-slate-900/90 rounded-xl border border-slate-700/60 flex items-center gap-2 flex-wrap text-xs">
-                              <span className="text-slate-300 font-semibold text-[11px] flex items-center gap-1 mr-1">
+                            <div key={expYear} className="p-2.5 bg-[#FDDDE6]/25 rounded-xl border border-[#F8C8DC] flex items-center gap-2 flex-wrap text-xs">
+                              <span className="text-[#C7000b] font-bold text-[11px] flex items-center gap-1 mr-1">
                                 <span>民國 {expYear} 年月份：</span>
                               </span>
 
                               {/* 全選該整年份按鈕 */}
                               <button
                                 onClick={() => toggleYear(expYear)}
-                                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition border ${
+                                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition border ${
                                   isYearSelected
-                                    ? 'bg-blue-600 text-white border-blue-500 shadow-sm'
-                                    : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                                    ? 'bg-[#C7000b] text-white border-[#C7000b] shadow-sm'
+                                    : 'bg-white text-slate-700 border-slate-200 hover:border-[#F8C8DC] hover:text-[#C7000b]'
                                 }`}
                               >
                                 {isYearSelected && <IconCheck size={11} />}
                                 <span>全部 {expYear} 年 ({totalInYear})</span>
                               </button>
 
-                              <div className="h-4 w-px bg-slate-700/60 mx-1"></div>
+                              <div className="h-4 w-px bg-[#F8C8DC] mx-1"></div>
 
                               {/* 該年份底下的月份按鈕群 */}
                               {yearItem.months.map(ym => {
@@ -1319,13 +1325,13 @@
                                     onClick={() => toggleMonth(ym)}
                                     className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs transition border ${
                                       isMonthSelected
-                                        ? 'bg-cyan-600/30 text-cyan-200 border-cyan-500 font-semibold shadow-sm'
-                                        : 'bg-slate-800/80 text-slate-300 border-slate-700/60 hover:bg-slate-700 hover:text-white'
+                                        ? 'bg-[#C7000b] text-white border-[#C7000b] font-bold shadow-sm'
+                                        : 'bg-white text-slate-700 border-slate-200 hover:bg-[#FDDDE6]/50 hover:border-[#F8C8DC] hover:text-[#C7000b]'
                                     }`}
                                   >
-                                    {isMonthSelected && <IconCheck size={10} className="text-cyan-400" />}
+                                    {isMonthSelected && <IconCheck size={10} className="text-white" />}
                                     <span>{m} 月</span>
-                                    <span className={`text-[10px] font-mono ml-0.5 ${isMonthSelected ? 'text-cyan-300' : 'text-slate-400'}`}>
+                                    <span className={`text-[10px] font-mono ml-0.5 ${isMonthSelected ? 'text-white/90' : 'text-slate-400'}`}>
                                       ({count})
                                     </span>
                                   </button>
@@ -1335,7 +1341,7 @@
                               {/* 關閉/收合該年份月份列 */}
                               <button
                                 onClick={() => setExpandedYears(prev => prev.filter(y => y !== expYear))}
-                                className="ml-auto text-slate-400 hover:text-slate-200 p-1 rounded hover:bg-slate-800 transition"
+                                className="ml-auto text-slate-400 hover:text-[#C7000b] p-1 rounded hover:bg-[#FDDDE6]/50 transition"
                                 title="收合月份"
                               >
                                 <IconX size={13} />
@@ -1350,33 +1356,33 @@
 
                 {/* 已套用的多選標籤列 (Active Filter Badges) */}
                 {hasActiveFilters && (
-                  <div className="flex flex-wrap items-center gap-2 p-3 bg-slate-800/50 rounded-xl border border-slate-700/60 text-xs">
-                    <span className="text-slate-400 text-[11px] font-semibold flex items-center gap-1 mr-1">
-                      <IconFolder size={13} className="text-blue-400" />
+                  <div className="flex flex-wrap items-center gap-2 p-3 bg-white rounded-xl border border-[#F8C8DC] shadow-sm text-xs">
+                    <span className="text-[#C7000b] text-[11px] font-bold flex items-center gap-1 mr-1">
+                      <IconFolder size={13} className="text-[#C7000b]" />
                       <span>已套用標籤：</span>
                     </span>
 
                     {/* 年份標籤 */}
                     {selectedYears.map(year => (
-                      <span key={year} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/40 font-mono text-[11px]">
+                      <span key={year} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#FDDDE6]/70 text-[#C7000b] border border-[#F8C8DC] font-mono font-semibold text-[11px]">
                         <span>年份: {year}年</span>
-                        <button onClick={() => toggleYear(year)} className="hover:text-white" title="移除標籤"><IconX size={11} /></button>
+                        <button onClick={() => toggleYear(year)} className="hover:text-[#a30009]" title="移除標籤"><IconX size={11} /></button>
                       </span>
                     ))}
 
                     {/* 指定年月標籤 */}
                     {selectedMonths.map(ym => (
-                      <span key={ym} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-mono text-[11px]">
+                      <span key={ym} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#FF531A]/10 text-[#FF531A] border border-[#FF531A]/30 font-mono font-semibold text-[11px]">
                         <span>年月: {ym}</span>
-                        <button onClick={() => toggleMonth(ym)} className="hover:text-white" title="移除標籤"><IconX size={11} /></button>
+                        <button onClick={() => toggleMonth(ym)} className="hover:text-[#C7000b]" title="移除標籤"><IconX size={11} /></button>
                       </span>
                     ))}
 
                     {/* 檔案類別標籤 */}
                     {selectedCategories.map(cat => (
-                      <span key={cat} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 text-[11px]">
+                      <span key={cat} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#FDDDE6] text-[#C7000b] border border-[#F8C8DC] font-semibold text-[11px]">
                         <span>類別: {cat}</span>
-                        <button onClick={() => toggleCategory(cat)} className="hover:text-white" title="移除標籤"><IconX size={11} /></button>
+                        <button onClick={() => toggleCategory(cat)} className="hover:text-[#a30009]" title="移除標籤"><IconX size={11} /></button>
                       </span>
                     ))}
 
@@ -1384,10 +1390,10 @@
                     {selectedSubCategories.map(subKey => {
                       const [cat, sub] = subKey.split('::');
                       return (
-                        <span key={subKey} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-600/30 text-indigo-200 border border-indigo-400/50 text-[11px] shadow-sm">
-                          <span className="text-indigo-400 font-mono text-[10px]">{cat} &gt;</span>
-                          <span className="font-semibold">{sub}</span>
-                          <button onClick={() => toggleSubCategory(cat, sub)} className="hover:text-white ml-0.5" title="移除子分類標籤"><IconX size={11} /></button>
+                        <span key={subKey} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#C7000b] text-white border border-[#C7000b] text-[11px] shadow-sm">
+                          <span className="text-[#FDDDE6] font-mono text-[10px]">{cat} &gt;</span>
+                          <span className="font-bold">{sub}</span>
+                          <button onClick={() => toggleSubCategory(cat, sub)} className="hover:text-[#FDDDE6] ml-0.5" title="移除子分類標籤"><IconX size={11} /></button>
                         </span>
                       );
                     })}
@@ -1399,25 +1405,25 @@
                       return (
                         <span 
                           key={org} 
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-white border shadow-sm"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold text-white border shadow-sm"
                           style={{
-                            backgroundColor: `${colorObj.bg}35`,
+                            backgroundColor: colorObj.bg,
                             borderColor: colorObj.border
                           }}
                         >
-                          <span className="w-1.5 h-1.5 rounded-full shadow-sm" style={{ backgroundColor: colorObj.bg }} />
-                          <span className="text-[10px] text-slate-300 font-mono">[{grp}]</span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
+                          <span className="text-[10px] text-white/90 font-mono">[{grp}]</span>
                           <span>{org}</span>
-                          <button onClick={() => toggleOrg(org)} className="hover:text-red-400 ml-0.5" title="移除標籤"><IconX size={11} /></button>
+                          <button onClick={() => toggleOrg(org)} className="hover:text-white/70 ml-0.5" title="移除標籤"><IconX size={11} /></button>
                         </span>
                       );
                     })}
 
                     {/* 關鍵字搜尋標籤 */}
                     {searchQuery && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-700 text-slate-200 border border-slate-600 text-[11px]">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-300 font-semibold text-[11px]">
                         <span>關鍵字: "{searchQuery}"</span>
-                        <button onClick={() => setSearchQuery('')} className="hover:text-white" title="清除關鍵字"><IconX size={11} /></button>
+                        <button onClick={() => setSearchQuery('')} className="hover:text-[#C7000b]" title="清除關鍵字"><IconX size={11} /></button>
                       </span>
                     )}
                   </div>
@@ -1426,19 +1432,19 @@
                 {/* 載入中骨架屏 */}
                 {isLoading && records.length === 0 && (
                   <div className="flex flex-col items-center justify-center p-16 space-y-3">
-                    <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                    <p className="text-sm text-slate-400">正在從 Google 試算表載入 1,200+ 筆資料，請稍候...</p>
+                    <div className="w-10 h-10 border-4 border-[#C7000b] border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-sm text-slate-500 font-medium">正在從 Google 試算表載入 1,200+ 筆資料，請稍候...</p>
                   </div>
                 )}
 
                 {/* 無相符資料提示 */}
                 {!isLoading && filteredRecords.length === 0 && (
-                  <div className="bg-slate-800/20 border border-slate-800 rounded-2xl p-12 text-center space-y-3">
-                    <p className="text-slate-400 text-sm">找不到同時符合當前標籤條件的檔案紀錄</p>
+                  <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center space-y-3 shadow-sm">
+                    <p className="text-slate-500 text-sm font-medium">找不到同時符合當前標籤條件的檔案紀錄</p>
                     <div className="flex items-center justify-center">
                       <button
                         onClick={clearAllFilters}
-                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium transition"
+                        className="px-4 py-2 bg-[#C7000b] hover:bg-[#a30009] text-white rounded-xl text-xs font-bold transition shadow-sm"
                       >
                         清除所有標籤篩選
                       </button>
@@ -1448,7 +1454,7 @@
 
                 {/* 檔案展示區：方框式 (Grid) 或 清單式 (List) */}
                 {viewMode === 'grid' ? (
-                  /* 1. 方框式 (卡片網格視圖) */
+                  /* 1. 方框式 (卡片網格視圖 - 參照清福企業識別白底、#FDDDE6 粉紅圖示框與 #C7000b 主色) */
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                     {pagedRecords.map(item => {
                       const colorObj = getOrgColor(item.org);
@@ -1458,10 +1464,10 @@
                       return (
                         <div 
                           key={item.id}
-                          className={`min-w-0 bg-slate-800/50 hover:bg-slate-800 border rounded-2xl p-4 transition flex flex-col justify-between group shadow-lg overflow-hidden relative ${
+                          className={`min-w-0 bg-white hover:bg-white border rounded-2xl p-4 transition-all flex flex-col justify-between group overflow-hidden relative ${
                             isSelected 
-                              ? 'border-blue-500 ring-2 ring-blue-500/30 bg-slate-800/90 shadow-blue-500/10' 
-                              : 'border-slate-700/60 hover:border-blue-500/50'
+                              ? 'border-[#C7000b] ring-2 ring-[#F8C8DC] bg-[#FDDDE6]/15 shadow-md' 
+                              : 'border-slate-200/90 hover:border-[#F8C8DC] shadow-sm hover:shadow-md'
                           }`}
                         >
                           <div>
@@ -1474,8 +1480,8 @@
                                   onClick={() => toggleFileSelection(item.id)}
                                   className={`w-4 h-4 rounded border flex items-center justify-center transition flex-shrink-0 ${
                                     isSelected 
-                                      ? 'bg-blue-600 border-blue-500 text-white' 
-                                      : 'border-slate-600 bg-slate-900/80 hover:border-blue-400'
+                                      ? 'bg-[#C7000b] border-[#C7000b] text-white' 
+                                      : 'border-slate-300 bg-white hover:border-[#C7000b]'
                                   }`}
                                   title={isSelected ? "取消選取" : "選取檔案"}
                                 >
@@ -1485,60 +1491,67 @@
                                 {/* 館別標籤 */}
                                 <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border tracking-wider flex-shrink-0 ${
                                   grp === '本館' 
-                                    ? 'bg-blue-950/80 text-blue-300 border-blue-500/50' 
-                                    : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50'
+                                    ? 'bg-[#FDDDE6] text-[#C7000b] border-[#F8C8DC]' 
+                                    : 'bg-[#FF531A]/15 text-[#FF531A] border-[#FF531A]/30'
                                 }`}>
                                   {grp}
                                 </span>
 
                                 {/* 放大且清晰之機構專屬顏色徽章 */}
                                 <span 
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold text-white tracking-wide border shadow-sm transition-transform group-hover:scale-105 select-text"
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-xl text-xs font-bold text-white tracking-wide border shadow-sm transition-transform group-hover:scale-105 select-text"
                                   style={{
                                     backgroundColor: colorObj.bg,
-                                    borderColor: colorObj.border,
-                                    boxShadow: `0 2px 8px ${colorObj.bg}50`
+                                    borderColor: colorObj.border
                                   }}
                                 >
                                   <span className="w-1.5 h-1.5 rounded-full bg-white opacity-90 shadow-sm flex-shrink-0" />
-                                  <span className="truncate max-w-[120px] drop-shadow-sm">{item.org}</span>
+                                  <span className="truncate max-w-[120px]">{item.org}</span>
                                 </span>
                               </div>
                             </div>
 
-                            {/* 檔名 */}
-                            <h3 className="font-semibold text-slate-100 text-xs line-clamp-2 mb-2 group-hover:text-blue-400 transition break-all" title={item.name}>
-                              {item.name}
-                            </h3>
+                            {/* 視覺識別設計區塊：左側淺粉方塊 (#FDDDE6 / #F8C8DC) + 右側文檔標題與分類膠囊 */}
+                            <div className="flex items-start gap-3 mb-3">
+                              <div className="w-11 h-11 rounded-xl bg-[#FDDDE6] border border-[#F8C8DC] flex items-center justify-center text-[#C7000b] flex-shrink-0 group-hover:bg-[#F8C8DC]/80 transition shadow-inner">
+                                <IconFileText size={20} />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                {/* 檔名 */}
+                                <h3 className="font-bold text-slate-800 text-xs line-clamp-2 mb-1.5 group-hover:text-[#C7000b] transition break-all leading-relaxed" title={item.name}>
+                                  {item.name}
+                                </h3>
 
-                            {/* 分類與子分類標籤 */}
-                            <div className="flex flex-wrap gap-1 mb-2.5">
-                              <span className="px-2 py-0.5 rounded bg-blue-600/20 text-blue-300 border border-blue-500/30 text-[10px] truncate max-w-full">
-                                {item.category}
-                              </span>
-                              {item.subCategory && (
-                                <span className="px-2 py-0.5 rounded bg-slate-700/60 text-slate-300 text-[10px] truncate max-w-full">
-                                  {item.subCategory}
-                                </span>
-                              )}
+                                {/* 分類與子分類標籤 */}
+                                <div className="flex flex-wrap gap-1">
+                                  <span className="px-2 py-0.5 rounded-full bg-[#C7000b]/10 text-[#C7000b] border border-[#F8C8DC] text-[10px] font-bold truncate max-w-full">
+                                    {item.category}
+                                  </span>
+                                  {item.subCategory && (
+                                    <span className="px-2 py-0.5 rounded-full bg-[#FDDDE6]/70 text-slate-700 border border-[#F8C8DC]/80 text-[10px] font-medium truncate max-w-full">
+                                      {item.subCategory}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                           </div>
 
                           {/* 底部元數據與操作按鈕 */}
-                          <div className="pt-2.5 border-t border-slate-700/50 space-y-2 text-[10px]">
-                            <div className="flex justify-between items-center text-slate-400">
-                              <span className="flex items-center gap-1 font-mono text-slate-300 font-medium">
-                                <IconCalendar size={11} /> {item.rocYear}_{item.month}
+                          <div className="pt-2.5 border-t border-slate-100 space-y-2 text-[10px]">
+                            <div className="flex justify-between items-center text-slate-500">
+                              <span className="flex items-center gap-1 font-mono text-slate-600 font-semibold">
+                                <IconCalendar size={11} className="text-[#C7000b]" /> {item.rocYear}_{item.month}
                               </span>
                             </div>
 
                             {/* 連結操作按鈕 */}
-                            <div className="flex gap-2 pt-1">
+                            <div className="flex gap-2 pt-0.5">
                               <a
                                 href={item.viewUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex-1 flex items-center justify-center gap-1 bg-slate-700/60 hover:bg-slate-700 text-slate-200 py-1.5 rounded-lg transition font-medium"
+                                className="flex-1 flex items-center justify-center gap-1 bg-slate-100 hover:bg-[#FDDDE6]/60 text-slate-700 hover:text-[#C7000b] border border-slate-200/80 hover:border-[#F8C8DC] py-1.5 rounded-full transition font-semibold"
                               >
                                 <IconExternalLink size={12} />
                                 <span>預覽文檔</span>
@@ -1549,7 +1562,7 @@
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   download
-                                  className="flex-1 flex items-center justify-center gap-1 bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-500/30 py-1.5 rounded-lg transition font-medium"
+                                  className="flex-1 flex items-center justify-center gap-1 bg-[#C7000b] hover:bg-[#a30009] text-white py-1.5 rounded-full transition font-bold shadow-sm shadow-[#C7000b]/20"
                                 >
                                   <IconDownload size={12} />
                                   <span>下載</span>
@@ -1564,34 +1577,34 @@
                   </div>
                 ) : (
                   /* 2. 清單式 (詳細表格視圖) */
-                  <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                  <div className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-sm">
                     <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs text-slate-300 border-collapse">
-                        <thead className="bg-slate-950/90 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800 sticky top-0 z-10 select-none">
+                      <table className="w-full text-left text-xs text-slate-700 border-collapse">
+                        <thead className="bg-[#FDDDE6]/45 text-slate-700 uppercase text-[11px] tracking-wider border-b border-[#F8C8DC] sticky top-0 z-10 select-none">
                           <tr>
-                            <th className="py-3 px-3 w-10 text-center font-semibold">
+                            <th className="py-3 px-3 w-10 text-center font-bold">
                               <button
                                 type="button"
                                 onClick={toggleSelectCurrentPage}
                                 className={`w-4 h-4 rounded border mx-auto flex items-center justify-center transition ${
                                   isCurrentPageAllSelected 
-                                    ? 'bg-blue-600 border-blue-500 text-white' 
-                                    : 'border-slate-600 bg-slate-900/80 hover:border-blue-400'
+                                    ? 'bg-[#C7000b] border-[#C7000b] text-white' 
+                                    : 'border-slate-300 bg-white hover:border-[#C7000b]'
                                 }`}
                                 title={isCurrentPageAllSelected ? "取消全選本頁" : "全選本頁"}
                               >
                                 {isCurrentPageAllSelected && <IconCheck size={11} className="text-white" />}
                               </button>
                             </th>
-                            <th className="py-3 px-4 font-semibold">機構 / 館別</th>
-                            <th className="py-3 px-4 font-semibold">檔案名稱</th>
-                            <th className="py-3 px-4 font-semibold">檔案分類</th>
-                            <th className="py-3 px-4 font-semibold">子分類</th>
-                            <th className="py-3 px-4 font-semibold">民國年月</th>
-                            <th className="py-3 px-4 font-semibold text-right">操作</th>
+                            <th className="py-3 px-4 font-bold text-[#C7000b]">機構 / 館別</th>
+                            <th className="py-3 px-4 font-bold">檔案名稱</th>
+                            <th className="py-3 px-4 font-bold">檔案分類</th>
+                            <th className="py-3 px-4 font-bold">子分類</th>
+                            <th className="py-3 px-4 font-bold">民國年月</th>
+                            <th className="py-3 px-4 font-bold text-right">操作</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-800/70">
+                        <tbody className="divide-y divide-slate-100">
                           {pagedRecords.map((item, idx) => {
                             const colorObj = getOrgColor(item.org);
                             const grp = item.orgGroup || getOrgGroup(item.org);
@@ -1602,8 +1615,8 @@
                                 key={item.id} 
                                 className={`transition group ${
                                   isSelected 
-                                    ? 'bg-blue-600/15 hover:bg-blue-600/20' 
-                                    : idx % 2 === 0 ? 'bg-slate-900/40 hover:bg-slate-800/60' : 'bg-slate-900/10 hover:bg-slate-800/60'
+                                    ? 'bg-[#FDDDE6]/40 hover:bg-[#FDDDE6]/60' 
+                                    : idx % 2 === 0 ? 'bg-white hover:bg-[#FDDDE6]/20' : 'bg-slate-50/50 hover:bg-[#FDDDE6]/20'
                                 }`}
                               >
                                 {/* 勾選框 */}
@@ -1613,8 +1626,8 @@
                                     onClick={() => toggleFileSelection(item.id)}
                                     className={`w-4 h-4 rounded border mx-auto flex items-center justify-center transition ${
                                       isSelected 
-                                        ? 'bg-blue-600 border-blue-500 text-white' 
-                                        : 'border-slate-600 bg-slate-900/80 hover:border-blue-400'
+                                        ? 'bg-[#C7000b] border-[#C7000b] text-white' 
+                                        : 'border-slate-300 bg-white hover:border-[#C7000b]'
                                     }`}
                                     title={isSelected ? "取消選取" : "選取檔案"}
                                   >
@@ -1627,8 +1640,8 @@
                                   <div className="flex items-center gap-2">
                                     <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${
                                       grp === '本館' 
-                                        ? 'bg-blue-950/70 text-blue-300 border-blue-500/40' 
-                                        : 'bg-emerald-950/70 text-emerald-300 border-emerald-500/40'
+                                        ? 'bg-[#FDDDE6] text-[#C7000b] border-[#F8C8DC]' 
+                                        : 'bg-[#FF531A]/15 text-[#FF531A] border-[#FF531A]/30'
                                     }`}>
                                       {grp}
                                     </span>
@@ -1647,10 +1660,12 @@
 
                                 {/* 檔案名稱 */}
                                 <td className="py-2.5 px-4 min-w-[240px] max-w-[360px]">
-                                  <div className="flex items-center gap-2">
-                                    <IconFileText size={15} className="text-slate-500 group-hover:text-blue-400 transition flex-shrink-0" />
+                                  <div className="flex items-center gap-2.5">
+                                    <span className="w-6 h-6 rounded-lg bg-[#FDDDE6] border border-[#F8C8DC] flex items-center justify-center text-[#C7000b] flex-shrink-0">
+                                      <IconFileText size={13} />
+                                    </span>
                                     <span 
-                                      className="font-medium text-slate-100 group-hover:text-blue-300 transition truncate select-text cursor-pointer"
+                                      className="font-semibold text-slate-800 group-hover:text-[#C7000b] transition truncate select-text cursor-pointer"
                                       title={item.name}
                                       onClick={() => window.open(item.viewUrl, '_blank', 'noopener,noreferrer')}
                                     >
@@ -1661,7 +1676,7 @@
 
                                 {/* 檔案分類 */}
                                 <td className="py-2.5 px-4 whitespace-nowrap">
-                                  <span className="px-2 py-0.5 rounded bg-blue-500/15 text-blue-300 border border-blue-500/30 text-[11px] font-medium">
+                                  <span className="px-2.5 py-0.5 rounded-full bg-[#C7000b]/10 text-[#C7000b] border border-[#F8C8DC] text-[11px] font-bold">
                                     {item.category}
                                   </span>
                                 </td>
@@ -1669,16 +1684,16 @@
                                 {/* 子分類 */}
                                 <td className="py-2.5 px-4 whitespace-nowrap">
                                   {item.subCategory ? (
-                                    <span className="px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 text-[11px]">
+                                    <span className="px-2.5 py-0.5 rounded-full bg-[#FDDDE6]/70 text-slate-700 border border-[#F8C8DC] text-[11px] font-medium">
                                       {item.subCategory}
                                     </span>
                                   ) : (
-                                    <span className="text-slate-600 text-[11px]">-</span>
+                                    <span className="text-slate-400 text-[11px]">-</span>
                                   )}
                                 </td>
 
                                 {/* 年月份 */}
-                                <td className="py-2.5 px-4 whitespace-nowrap font-mono text-[11px] text-slate-300 font-medium">
+                                <td className="py-2.5 px-4 whitespace-nowrap font-mono text-[11px] text-slate-600 font-semibold">
                                   <span>{item.rocYear}_{item.month}</span>
                                 </td>
 
@@ -1690,7 +1705,7 @@
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       title="在 Google 雲端硬碟預覽文檔"
-                                      className="inline-flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded-lg text-xs transition border border-slate-700/80 hover:border-slate-600"
+                                      className="inline-flex items-center gap-1 bg-slate-100 hover:bg-[#FDDDE6]/60 text-slate-700 hover:text-[#C7000b] px-2.5 py-1 rounded-full text-xs font-semibold transition border border-slate-200 hover:border-[#F8C8DC]"
                                     >
                                       <IconExternalLink size={12} />
                                       <span>預覽</span>
@@ -1702,7 +1717,7 @@
                                         rel="noopener noreferrer"
                                         download
                                         title="下載此檔案"
-                                        className="inline-flex items-center gap-1 bg-blue-600/25 hover:bg-blue-600 text-blue-300 hover:text-white px-2.5 py-1 rounded-lg text-xs transition border border-blue-500/30"
+                                        className="inline-flex items-center gap-1 bg-[#C7000b] hover:bg-[#a30009] text-white px-2.5 py-1 rounded-full text-xs font-bold transition shadow-sm"
                                       >
                                         <IconDownload size={12} />
                                         <span>下載</span>
@@ -1721,41 +1736,41 @@
 
                 {/* 分頁控制器 */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between border-t border-slate-800 pt-4 pb-2 text-xs flex-wrap gap-2">
-                    <div className="text-slate-400">
-                      顯示第 <span className="font-mono text-slate-200">{(currentPage - 1) * pageSize + 1}</span> 至{' '}
-                      <span className="font-mono text-slate-200">{Math.min(currentPage * pageSize, filteredRecords.length)}</span> 筆 (共 {filteredRecords.length} 筆)
+                  <div className="flex items-center justify-between border-t border-slate-200 pt-4 pb-2 text-xs flex-wrap gap-2">
+                    <div className="text-slate-500">
+                      顯示第 <span className="font-mono font-bold text-slate-800">{(currentPage - 1) * pageSize + 1}</span> 至{' '}
+                      <span className="font-mono font-bold text-slate-800">{Math.min(currentPage * pageSize, filteredRecords.length)}</span> 筆 (共 {filteredRecords.length} 筆)
                     </div>
 
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => setCurrentPage(1)}
                         disabled={currentPage === 1}
-                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 rounded-lg text-slate-300"
+                        className="px-2.5 py-1 bg-white hover:bg-[#FDDDE6]/50 border border-slate-200 disabled:opacity-40 rounded-lg text-slate-700 font-medium shadow-sm"
                       >
                         首頁
                       </button>
                       <button
                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                         disabled={currentPage === 1}
-                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 rounded-lg text-slate-300"
+                        className="px-2.5 py-1 bg-white hover:bg-[#FDDDE6]/50 border border-slate-200 disabled:opacity-40 rounded-lg text-slate-700 font-medium shadow-sm"
                       >
                         上一頁
                       </button>
-                      <span className="px-3 py-1 font-mono text-blue-400 bg-slate-800/80 rounded-lg border border-slate-700">
+                      <span className="px-3 py-1 font-mono font-bold text-[#C7000b] bg-[#FDDDE6]/60 rounded-lg border border-[#F8C8DC]">
                         {currentPage} / {totalPages}
                       </span>
                       <button
                         onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                         disabled={currentPage === totalPages}
-                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 rounded-lg text-slate-300"
+                        className="px-2.5 py-1 bg-white hover:bg-[#FDDDE6]/50 border border-slate-200 disabled:opacity-40 rounded-lg text-slate-700 font-medium shadow-sm"
                       >
                         下一頁
                       </button>
                       <button
                         onClick={() => setCurrentPage(totalPages)}
                         disabled={currentPage === totalPages}
-                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 rounded-lg text-slate-300"
+                        className="px-2.5 py-1 bg-white hover:bg-[#FDDDE6]/50 border border-slate-200 disabled:opacity-40 rounded-lg text-slate-700 font-medium shadow-sm"
                       >
                         末頁
                       </button>
@@ -1767,11 +1782,11 @@
 
               {/* 底部懸浮批量操作列 (選取檔案時顯示) */}
               {selectedFileIds.length > 0 && (
-                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900/95 backdrop-blur-md border border-blue-500/50 rounded-2xl px-5 py-3 shadow-2xl flex items-center gap-4 text-xs animate-in fade-in slide-in-from-bottom-4 duration-200">
-                  <div className="flex items-center gap-2 pr-3 border-r border-slate-700">
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
-                    <span className="text-slate-200 font-medium">
-                      已選取 <span className="font-mono text-blue-400 text-sm font-bold">{selectedFileIds.length}</span> 個檔案
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white/95 backdrop-blur-md border-2 border-[#C7000b] rounded-2xl px-5 py-3 shadow-2xl flex items-center gap-4 text-xs animate-in fade-in slide-in-from-bottom-4 duration-200">
+                  <div className="flex items-center gap-2 pr-3 border-r border-slate-200">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#C7000b] animate-pulse" />
+                    <span className="text-slate-700 font-semibold">
+                      已選取 <span className="font-mono text-[#C7000b] text-sm font-bold">{selectedFileIds.length}</span> 個檔案
                     </span>
                   </div>
 
@@ -1779,7 +1794,7 @@
                   <button
                     onClick={startBatchDownload}
                     disabled={batchDownloadProgress && batchDownloadProgress.isRunning}
-                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-60 text-white font-medium px-4 py-2 rounded-xl transition shadow-lg shadow-blue-500/20 active:scale-95"
+                    className="flex items-center gap-2 bg-gradient-to-r from-[#C7000b] to-[#FF531A] hover:from-[#a30009] hover:to-[#e04310] disabled:opacity-60 text-white font-bold px-4 py-2 rounded-full transition shadow-md shadow-[#C7000b]/25 active:scale-95"
                   >
                     {batchDownloadProgress && batchDownloadProgress.isRunning ? (
                       <>
@@ -1798,7 +1813,7 @@
                   <button
                     onClick={clearFileSelection}
                     disabled={batchDownloadProgress && batchDownloadProgress.isRunning}
-                    className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition"
+                    className="p-1.5 text-slate-400 hover:text-[#C7000b] hover:bg-[#FDDDE6]/50 rounded-lg transition"
                     title="取消選取全部檔案"
                   >
                     <IconX size={16} />
@@ -1810,102 +1825,117 @@
 
             {/* Modal: 版本更新紀錄 (Changelog) */}
             {isChangelogModalOpen && (
-              <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl p-6 space-y-4 text-xs max-h-[85vh] flex flex-col shadow-2xl">
+              <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-2xl p-6 space-y-4 text-xs max-h-[85vh] flex flex-col shadow-2xl">
                   {/* Header */}
-                  <div className="flex justify-between items-center border-b border-slate-800 pb-3 flex-shrink-0">
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 bg-blue-500/20 text-blue-400 rounded-lg">
+                  <div className="flex justify-between items-center border-b border-slate-200 pb-3 flex-shrink-0">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 bg-[#FDDDE6] text-[#C7000b] border border-[#F8C8DC] rounded-xl">
                         <IconFolder size={18} />
                       </div>
                       <div>
-                        <h3 className="font-bold text-sm text-slate-100 flex items-center gap-2">
+                        <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
                           <span>清福檔案庫 - 版本更新紀錄</span>
-                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-400 font-mono">v3.5</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#C7000b] text-white font-mono">v3.6</span>
                         </h3>
-                        <p className="text-[11px] text-slate-400 mt-0.5">完整記錄系統演進與各版本功能變更清單</p>
+                        <p className="text-[11px] text-slate-500 mt-0.5">完整記錄系統演進與各版本功能變更清單</p>
                       </div>
                     </div>
                     <button 
                       onClick={() => setIsChangelogModalOpen(false)} 
-                      className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition"
+                      className="p-1.5 text-slate-400 hover:text-[#C7000b] hover:bg-[#FDDDE6]/50 rounded-lg transition"
                     >
                       <IconX size={16} />
                     </button>
                   </div>
 
                   {/* 內容區塊 */}
-                  <div className="overflow-y-auto custom-scrollbar pr-2 space-y-4 flex-1">
+                  <div className="overflow-y-auto custom-scrollbar pr-2 space-y-3.5 flex-1">
                     
-                    {/* v3.5 */}
-                    <div className="bg-slate-950/60 p-4 rounded-xl border border-blue-500/30 space-y-2">
+                    {/* v3.6 */}
+                    <div className="bg-[#FDDDE6]/30 p-4 rounded-xl border border-[#F8C8DC] space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-blue-300 text-xs flex items-center gap-1.5">
-                          <span className="px-2 py-0.5 rounded bg-blue-600 text-white font-mono text-[10px]">v3.5</span>
+                        <span className="font-bold text-[#C7000b] text-xs flex items-center gap-1.5">
+                          <span className="px-2 py-0.5 rounded-md bg-[#C7000b] text-white font-mono text-[10px]">v3.6</span>
+                          <span>清福企業識別視覺風格全面升級</span>
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-mono">2026-11-11 (最新版本)</span>
+                      </div>
+                      <ul className="list-disc pl-4 space-y-1 text-slate-700 text-[11px] leading-relaxed">
+                        <li><b>清福企業識別色系</b>：採用乾淨明亮的專業中性白底色調，搭配清福專屬識別紅（<code>#C7000b</code>）為主視覺核心，並結合柔粉（<code>#F8C8DC</code>）、淺粉（<code>#FDDDE6</code>）與活力橘紅（<code>#FF531A</code>）作為次要強調色與輔助容器色。</li>
+                        <li><b>方框式與清單式卡片煥新</b>：檔案卡片左上方配置淺粉色圓角文檔圖示框與紅色膠囊下載按鈕，視覺層次清爽直覺。</li>
+                      </ul>
+                    </div>
+
+                    {/* v3.5 */}
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-200 text-slate-700 font-mono text-[10px]">v3.5</span>
                           <span>頂部機構/區域快速篩選列</span>
                         </span>
-                        <span className="text-[10px] text-slate-500 font-mono">2026-11-10 (最新版本)</span>
+                        <span className="text-[10px] text-slate-500 font-mono">2026-11-10</span>
                       </div>
-                      <ul className="list-disc pl-4 space-y-1 text-slate-300 text-[11px] leading-relaxed">
+                      <ul className="list-disc pl-4 space-y-1 text-slate-600 text-[11px] leading-relaxed">
                         <li><b>移至搜尋欄上方</b>：將「機構 / 區域分類（本館、新館）」自側邊欄移至主畫面頂部搜尋欄正上方，支援點擊展開/收合各館分區與一鍵全選。</li>
                         <li><b>側邊欄專注檔案類別</b>：釋放左側導航欄空間，讓「檔案類別」與子分類樹狀清單瀏覽更寬敞直覺。</li>
                       </ul>
                     </div>
 
                     {/* v3.4 */}
-                    <div className="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
-                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">v3.4</span>
+                        <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-200 text-slate-700 font-mono text-[10px]">v3.4</span>
                           <span>介面精簡與欄位調整</span>
                         </span>
                         <span className="text-[10px] text-slate-500 font-mono">2026-11-10</span>
                       </div>
-                      <ul className="list-disc pl-4 space-y-1 text-slate-300 text-[11px] leading-relaxed">
+                      <ul className="list-disc pl-4 space-y-1 text-slate-600 text-[11px] leading-relaxed">
                         <li><b>移除「上傳者」欄位</b>：清單式表格與方框式卡片不再顯示上傳者，版面更簡潔。</li>
                         <li><b>系統穩定性與安全性提升</b>：整理系統架構並移除不再使用的功能。</li>
                       </ul>
                     </div>
 
                     {/* v3.3 */}
-                    <div className="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
-                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">v3.3</span>
+                        <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-200 text-slate-700 font-mono text-[10px]">v3.3</span>
                           <span>系統維護更新</span>
                         </span>
                         <span className="text-[10px] text-slate-500 font-mono">2026-11-10</span>
                       </div>
-                      <ul className="list-disc pl-4 space-y-1 text-slate-400 text-[11px] leading-relaxed">
+                      <ul className="list-disc pl-4 space-y-1 text-slate-600 text-[11px] leading-relaxed">
                         <li>系統穩定性與安全性提升。</li>
                       </ul>
                     </div>
 
                     {/* v3.2 */}
-                    <div className="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
-                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">v3.2</span>
+                        <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-200 text-slate-700 font-mono text-[10px]">v3.2</span>
                           <span>側邊欄分組重構與字體放大強化</span>
                         </span>
                         <span className="text-[10px] text-slate-500 font-mono">2026-11-09</span>
                       </div>
-                      <ul className="list-disc pl-4 space-y-1 text-slate-400 text-[11px] leading-relaxed">
+                      <ul className="list-disc pl-4 space-y-1 text-slate-600 text-[11px] leading-relaxed">
                         <li><b>明確獨立雙分組卡片</b>：「機構 / 區域分類」與「檔案類別」採用獨立的大卡片容器與清晰外框邊界，視覺分組一目了然。</li>
                         <li><b>全局文字放大與清晰度提升</b>：分組標題、本館/新館項目、主類別與子類別名稱全面放大 1~2 級（13px~14px），數字符號對比增強，提升閱讀舒適度。</li>
                       </ul>
                     </div>
 
                     {/* v3.1 */}
-                    <div className="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
-                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">v3.1</span>
+                        <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-200 text-slate-700 font-mono text-[10px]">v3.1</span>
                           <span>頂部年份月份折疊篩選列</span>
                         </span>
                         <span className="text-[10px] text-slate-500 font-mono">2026-11-09</span>
                       </div>
-                      <ul className="list-disc pl-4 space-y-1 text-slate-400 text-[11px] leading-relaxed">
+                      <ul className="list-disc pl-4 space-y-1 text-slate-600 text-[11px] leading-relaxed">
                         <li><b>整合至標題 Banner</b>：將年月份篩選器自側邊欄移入頂部資訊列，釋放側邊欄垂直滾動空間，分類瀏覽更流暢。</li>
                         <li><b>折疊式月份展示</b>：一般預設僅展示各年份按鈕（民國 115 年、114 年...）；點擊年份即時展開該年份的所有月份按鈕與「全選該年」快捷鍵，再次點擊即可收合。</li>
                         <li><b>完整多選連動</b>：與機構、分類篩選完整複合過濾，並支援一鍵重設年月份。</li>
@@ -1913,15 +1943,15 @@
                     </div>
 
                     {/* v3.0 */}
-                    <div className="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
-                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">v3.0</span>
+                        <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-200 text-slate-700 font-mono text-[10px]">v3.0</span>
                           <span>多檔案選取與排程批量下載</span>
                         </span>
                         <span className="text-[10px] text-slate-500 font-mono">2026-11-09</span>
                       </div>
-                      <ul className="list-disc pl-4 space-y-1 text-slate-400 text-[11px] leading-relaxed">
+                      <ul className="list-disc pl-4 space-y-1 text-slate-600 text-[11px] leading-relaxed">
                         <li><b>雙視圖檔案多選</b>：方框式卡片左上角加入 Checkbox（選取發光高亮）；清單式表格每列加入勾選框。</li>
                         <li><b>快捷全選控制</b>：支援「全選本頁」與「全選所有結果（跨頁全選）」。</li>
                         <li><b>排程批量下載</b>：底部自動彈出懸浮操作列，以 800ms 間隔依序平穩下載檔案，解決瀏覽器彈窗封鎖與 CORS 跨域限制，並即時回饋下載進度。</li>
@@ -1929,88 +1959,88 @@
                     </div>
 
                     {/* v2.7 */}
-                    <div className="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
-                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">v2.7</span>
+                        <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-200 text-slate-700 font-mono text-[10px]">v2.7</span>
                           <span>純民國年月呈現</span>
                         </span>
                         <span className="text-[10px] text-slate-500 font-mono">2026-10-15</span>
                       </div>
-                      <ul className="list-disc pl-4 space-y-1 text-slate-400 text-[11px]">
+                      <ul className="list-disc pl-4 space-y-1 text-slate-600 text-[11px]">
                         <li>表格表頭更新為「民國年月」，移除卡片與表格中西元年括號（如 <code>(2026)</code>），統一為純民國年月（如 <code>115_06</code>）。</li>
                         <li>側邊欄年份分類簡化為「民國 115 年」。</li>
                       </ul>
                     </div>
 
                     {/* v2.6 */}
-                    <div className="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
-                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">v2.6</span>
+                        <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-200 text-slate-700 font-mono text-[10px]">v2.6</span>
                           <span>雙模式切換與品牌重構</span>
                         </span>
                         <span className="text-[10px] text-slate-500 font-mono">2026-10-14</span>
                       </div>
-                      <ul className="list-disc pl-4 space-y-1 text-slate-400 text-[11px]">
+                      <ul className="list-disc pl-4 space-y-1 text-slate-600 text-[11px]">
                         <li><b>顯示方式切換</b>：新增「方框式（每頁 24 筆）」與「清單式（每頁 30 筆）」雙視圖切換，並自動保存偏好。</li>
                         <li><b>企業品牌識別</b>：系統更名為「清福檔案庫」，引入大尺寸專屬 Logo 與分頁 Favicon。</li>
                       </ul>
                     </div>
 
                     {/* v2.5 */}
-                    <div className="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
-                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">v2.5</span>
+                        <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-200 text-slate-700 font-mono text-[10px]">v2.5</span>
                           <span>介面簡潔化與權限收攏</span>
                         </span>
                         <span className="text-[10px] text-slate-500 font-mono">2026-10-14</span>
                       </div>
-                      <ul className="list-disc pl-4 space-y-1 text-slate-400 text-[11px]">
+                      <ul className="list-disc pl-4 space-y-1 text-slate-600 text-[11px]">
                         <li>隱藏齒輪設定圖示，移除星號收藏、CSV 匯出、Google 外部按鈕與手動新增紀錄按鈕，介面更乾淨專業。</li>
                       </ul>
                     </div>
 
                     {/* v2.4 */}
-                    <div className="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
-                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">v2.4</span>
+                        <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-200 text-slate-700 font-mono text-[10px]">v2.4</span>
                           <span>D 欄子分類階層化細分</span>
                         </span>
                         <span className="text-[10px] text-slate-500 font-mono">2026-10-14</span>
                       </div>
-                      <ul className="list-disc pl-4 space-y-1 text-slate-400 text-[11px]">
+                      <ul className="list-disc pl-4 space-y-1 text-slate-600 text-[11px]">
                         <li>根據試算表 D 欄自動分析階層，有子分類之類別（如消毒資料、合約）支援點開展開細分子選單。</li>
                         <li>無子分類之類別（如驗水資料、清洗紀錄）自動維持單純按鈕樣式。</li>
                       </ul>
                     </div>
 
                     {/* v2.3 */}
-                    <div className="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
-                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">v2.3</span>
+                        <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-200 text-slate-700 font-mono text-[10px]">v2.3</span>
                           <span>23 個機構專屬獨立顏色徽章</span>
                         </span>
                         <span className="text-[10px] text-slate-500 font-mono">2026-10-14</span>
                       </div>
-                      <ul className="list-disc pl-4 space-y-1 text-slate-400 text-[11px]">
+                      <ul className="list-disc pl-4 space-y-1 text-slate-600 text-[11px]">
                         <li>配置 23 種獨立絕不重複的顏色徽章，並於檔案卡片中大幅放大與增強清晰度。</li>
                       </ul>
                     </div>
 
                     {/* v2.0 ~ v2.2 */}
-                    <div className="bg-slate-950/40 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-slate-200 text-xs flex items-center gap-1.5">
-                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">v2.0 ~ v2.2</span>
+                        <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-200 text-slate-700 font-mono text-[10px]">v2.0 ~ v2.2</span>
                           <span>機構二級分組、多選篩選與即時同步</span>
                         </span>
                         <span className="text-[10px] text-slate-500 font-mono">2026-10-14</span>
                       </div>
-                      <ul className="list-disc pl-4 space-y-1 text-slate-400 text-[11px]">
+                      <ul className="list-disc pl-4 space-y-1 text-slate-600 text-[11px]">
                         <li><b>v2.2</b>：機構分類為「本館」與「新館」，支援分組折疊與一鍵全選。</li>
                         <li><b>v2.1</b>：年份 + 機構 + 分類跨維度複合標籤多選篩選器。</li>
                         <li><b>v2.0</b>：即時串接 Google 試算表（1,700+ 筆資料），零延遲同步。</li>
@@ -2020,11 +2050,11 @@
                   </div>
 
                   {/* Footer */}
-                  <div className="flex justify-end pt-3 border-t border-slate-800 flex-shrink-0">
+                  <div className="flex justify-end pt-3 border-t border-slate-200 flex-shrink-0">
                     <button
                       type="button"
                       onClick={() => setIsChangelogModalOpen(false)}
-                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-medium transition"
+                      className="px-5 py-2 bg-[#C7000b] hover:bg-[#a30009] text-white rounded-full font-bold transition shadow-sm"
                     >
                       關閉
                     </button>

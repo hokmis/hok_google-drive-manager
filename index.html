@@ -47,15 +47,20 @@
       const DEFAULT_SHEET_ID = "1wNNnR0PxvFlwhi_r1q0NP32KtJyv9HRGs7X6zqFMh5Y";
       const DEFAULT_SHEET_GID = "0";
 
-      // 本館與新館機構清單定義
-      const BEN_GUAN_SET = new Set([
+      // 本館與新館機構清單與優先顯示排序定義
+      const BEN_GUAN_ORDER = [
         '清福', '清氣', '清心', '清平', '清安', '清春', '清日', '清照',
-        '清風', '清景', '清山', '清泉', '清水', '清清', '清涼', '護家', '含笑'
+        '清風', '清景', '清山', '清泉', '清水', '清清', '清涼', '護家'
+      ];
+      const XIN_GUAN_ORDER = [
+        '一館', '二館', '三館', '幼兒園'
+      ];
+
+      const BEN_GUAN_SET = new Set([
+        ...BEN_GUAN_ORDER, '含笑'
       ]);
 
-      const XIN_GUAN_SET = new Set([
-        '一館', '二館', '三館', '幼兒園'
-      ]);
+      const XIN_GUAN_SET = new Set(XIN_GUAN_ORDER);
 
       // 判斷機構歸屬「本館」或「新館」
       const getOrgGroup = (orgName) => {
@@ -395,8 +400,23 @@
             }
           });
 
-          benGuan.sort((a, b) => b.count - a.count);
-          xinGuan.sort((a, b) => b.count - a.count);
+          // 優先依照指定順序排列，不在優先清單內者則排在後方並依筆數排序
+          benGuan.sort((a, b) => {
+            const idxA = BEN_GUAN_ORDER.indexOf(a.name);
+            const idxB = BEN_GUAN_ORDER.indexOf(b.name);
+            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+            if (idxA !== -1) return -1;
+            if (idxB !== -1) return 1;
+            return b.count - a.count;
+          });
+          xinGuan.sort((a, b) => {
+            const idxA = XIN_GUAN_ORDER.indexOf(a.name);
+            const idxB = XIN_GUAN_ORDER.indexOf(b.name);
+            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+            if (idxA !== -1) return -1;
+            if (idxB !== -1) return 1;
+            return b.count - a.count;
+          });
 
           const benGuanTotal = benGuan.reduce((acc, cur) => acc + cur.count, 0);
           const xinGuanTotal = xinGuan.reduce((acc, cur) => acc + cur.count, 0);
@@ -711,7 +731,7 @@
                         title="點擊查看系統更新版本紀錄"
                         className="text-[10px] px-1.5 py-0.5 rounded-md bg-[#C7000b] text-white hover:bg-[#a30009] transition font-mono shadow-sm cursor-pointer"
                       >
-                        v3.6
+                        v3.7
                       </button>
                     </h1>
                     <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mt-1 font-medium">
@@ -930,44 +950,45 @@
             {/* 主內容區塊 (flex-1 min-w-0 確保卡片和排版自適應不爆版) */}
             <main className="flex-1 min-w-0 flex flex-col h-full bg-[#F8FAFC] overflow-hidden">
               
-              {/* 頂部工具列 (整合「機構 / 區域分類」於搜尋欄正上方) */}
-              <header className="border-b border-slate-200/90 px-6 py-3 flex flex-col gap-2.5 bg-white/95 backdrop-blur-md flex-shrink-0 shadow-sm z-10">
+              {/* 頂部工具列 (整合「機構 / 區域分類」於搜尋欄正上方，放大區塊與字體) */}
+              <header className="border-b border-slate-200/90 px-6 py-4 flex flex-col gap-3.5 bg-white/95 backdrop-blur-md flex-shrink-0 shadow-sm z-10">
                 
-                {/* 上層：機構 / 區域分類快速篩選區 */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between flex-wrap gap-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5 mr-1">
-                        <span className="p-1 rounded-lg bg-[#FDDDE6] text-[#C7000b] border border-[#F8C8DC]">
-                          <IconBuilding size={14} />
+                {/* 上層：機構 / 區域分類快速篩選區 (放大版) */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-[15px] font-bold text-slate-800 flex items-center gap-2 mr-1">
+                        <span className="p-1.5 rounded-xl bg-[#FDDDE6] text-[#C7000b] border border-[#F8C8DC] shadow-sm">
+                          <IconBuilding size={18} />
                         </span>
                         <span>機構 / 區域分類：</span>
                       </span>
 
                       {/* 本館展開/全選複合按鈕組 */}
-                      <div className="flex items-center bg-slate-50 rounded-xl border border-slate-200 p-1 gap-1 shadow-sm">
+                      <div className="flex items-center bg-slate-50 rounded-2xl border border-slate-200/90 p-1.5 gap-1.5 shadow-sm">
                         <button
                           onClick={() => setExpandedGroups(prev => ({ ...prev, benGuan: !prev.benGuan }))}
                           title={`點擊${expandedGroups.benGuan ? '收合' : '展開'}本館各分區`}
-                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition ${
+                          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-sm font-bold transition ${
                             expandedGroups.benGuan
                               ? 'bg-[#FDDDE6] text-[#C7000b] border border-[#F8C8DC]'
-                              : 'text-slate-700 hover:bg-[#FDDDE6]/40 hover:text-[#C7000b]'
+                              : 'text-slate-800 hover:bg-[#FDDDE6]/40 hover:text-[#C7000b]'
                           }`}
                         >
-                          <span>🏛️ 本館</span>
-                          <span className="text-[11px] text-slate-500 font-mono font-normal">
+                          <span className="text-base">🏛️</span>
+                          <span>本館</span>
+                          <span className="text-[13px] text-slate-500 font-mono font-medium">
                             ({orgGroupsData.benGuanTotal} 筆 / {orgGroupsData.benGuan.length} 區)
                           </span>
                           <IconChevronDown
-                            size={13}
+                            size={15}
                             className={`transition-transform duration-200 ${expandedGroups.benGuan ? 'rotate-180 text-[#C7000b]' : 'text-slate-400'}`}
                           />
                         </button>
                         <button
                           onClick={() => selectAllInGroup('本館')}
                           title={isBenGuanAllSelected ? '取消全選本館' : '全選本館所有分區'}
-                          className={`text-xs px-2 py-1 rounded-lg font-semibold transition ${
+                          className={`text-[13px] px-3 py-1.5 rounded-xl font-bold transition ${
                             isBenGuanAllSelected 
                               ? 'bg-[#C7000b] text-white shadow-sm' 
                               : 'text-[#C7000b] bg-white hover:bg-[#FDDDE6]/50 border border-[#F8C8DC]'
@@ -978,29 +999,30 @@
                       </div>
 
                       {/* 新館展開/全選複合按鈕組 */}
-                      <div className="flex items-center bg-slate-50 rounded-xl border border-slate-200 p-1 gap-1 shadow-sm">
+                      <div className="flex items-center bg-slate-50 rounded-2xl border border-slate-200/90 p-1.5 gap-1.5 shadow-sm">
                         <button
                           onClick={() => setExpandedGroups(prev => ({ ...prev, xinGuan: !prev.xinGuan }))}
                           title={`點擊${expandedGroups.xinGuan ? '收合' : '展開'}新館各分區`}
-                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition ${
+                          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-sm font-bold transition ${
                             expandedGroups.xinGuan
                               ? 'bg-[#FF531A]/15 text-[#FF531A] border border-[#FF531A]/30'
-                              : 'text-slate-700 hover:bg-[#FF531A]/10 hover:text-[#FF531A]'
+                              : 'text-slate-800 hover:bg-[#FF531A]/10 hover:text-[#FF531A]'
                           }`}
                         >
-                          <span>🏢 新館</span>
-                          <span className="text-[11px] text-slate-500 font-mono font-normal">
+                          <span className="text-base">🏢</span>
+                          <span>新館</span>
+                          <span className="text-[13px] text-slate-500 font-mono font-medium">
                             ({orgGroupsData.xinGuanTotal} 筆 / {orgGroupsData.xinGuan.length} 區)
                           </span>
                           <IconChevronDown
-                            size={13}
+                            size={15}
                             className={`transition-transform duration-200 ${expandedGroups.xinGuan ? 'rotate-180 text-[#FF531A]' : 'text-slate-400'}`}
                           />
                         </button>
                         <button
                           onClick={() => selectAllInGroup('新館')}
                           title={isXinGuanAllSelected ? '取消全選新館' : '全選新館所有分區'}
-                          className={`text-xs px-2 py-1 rounded-lg font-semibold transition ${
+                          className={`text-[13px] px-3 py-1.5 rounded-xl font-bold transition ${
                             isXinGuanAllSelected 
                               ? 'bg-[#FF531A] text-white shadow-sm' 
                               : 'text-[#FF531A] bg-white hover:bg-[#FF531A]/10 border border-[#FF531A]/30'
@@ -1014,9 +1036,9 @@
                     {selectedOrgs.length > 0 && (
                       <button 
                         onClick={() => setSelectedOrgs([])}
-                        className="text-xs text-[#C7000b] hover:text-[#a30009] hover:underline font-semibold flex items-center gap-1"
+                        className="text-[13px] text-[#C7000b] hover:text-[#a30009] hover:underline font-bold flex items-center gap-1"
                       >
-                        <IconX size={12} />
+                        <IconX size={14} />
                         <span>清除已選機構 ({selectedOrgs.length})</span>
                       </button>
                     )}
@@ -1024,8 +1046,8 @@
 
                   {/* 展開之本館分區徽章列表 */}
                   {expandedGroups.benGuan && (
-                    <div className="p-2.5 bg-[#FDDDE6]/25 rounded-xl border border-[#F8C8DC] flex items-center gap-1.5 flex-wrap">
-                      <span className="text-xs font-bold text-[#C7000b] mr-1 flex items-center gap-1">
+                    <div className="p-3.5 bg-[#FDDDE6]/25 rounded-2xl border border-[#F8C8DC] flex items-center gap-2 flex-wrap shadow-sm">
+                      <span className="text-[13px] font-bold text-[#C7000b] mr-1 flex items-center gap-1">
                         <span>🏛️ 本館分區：</span>
                       </span>
                       {orgGroupsData.benGuan.map(({ name, count }) => {
@@ -1035,20 +1057,20 @@
                           <button
                             key={name}
                             onClick={() => toggleOrg(name)}
-                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition border ${
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[13px] font-bold transition border ${
                               isSelected 
                                 ? 'bg-[#C7000b] text-white border-[#C7000b] shadow-sm' 
                                 : 'bg-white text-slate-700 border-slate-200 hover:border-[#F8C8DC] hover:bg-[#FDDDE6]/40 hover:text-[#C7000b]'
                             }`}
                           >
                             <span 
-                              className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-1 ring-black/10 shadow-sm"
+                              className="w-3 h-3 rounded-full flex-shrink-0 ring-1 ring-black/10 shadow-sm"
                               style={{ backgroundColor: colorObj.bg }}
                             />
                             <span>{name}</span>
-                            {isSelected && <IconCheck size={11} className="text-white flex-shrink-0" />}
-                            <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
-                              isSelected ? 'bg-white/20 text-white font-bold' : 'bg-slate-100 text-slate-500'
+                            {isSelected && <IconCheck size={13} className="text-white flex-shrink-0" />}
+                            <span className={`text-xs font-mono px-1.5 py-0.5 rounded-md ${
+                              isSelected ? 'bg-white/20 text-white font-bold' : 'bg-slate-100 text-slate-600 font-semibold'
                             }`}>
                               {count}
                             </span>
@@ -1057,18 +1079,18 @@
                       })}
                       <button
                         onClick={() => setExpandedGroups(prev => ({ ...prev, benGuan: false }))}
-                        className="ml-auto text-slate-400 hover:text-[#C7000b] p-1 rounded hover:bg-[#FDDDE6]/50 transition"
+                        className="ml-auto text-slate-400 hover:text-[#C7000b] p-1.5 rounded-lg hover:bg-[#FDDDE6]/50 transition"
                         title="收合本館分區"
                       >
-                        <IconX size={13} />
+                        <IconX size={15} />
                       </button>
                     </div>
                   )}
 
                   {/* 展開之新館分區徽章列表 */}
                   {expandedGroups.xinGuan && (
-                    <div className="p-2.5 bg-[#FF531A]/5 rounded-xl border border-[#FF531A]/25 flex items-center gap-1.5 flex-wrap">
-                      <span className="text-xs font-bold text-[#FF531A] mr-1 flex items-center gap-1">
+                    <div className="p-3.5 bg-[#FF531A]/5 rounded-2xl border border-[#FF531A]/25 flex items-center gap-2 flex-wrap shadow-sm">
+                      <span className="text-[13px] font-bold text-[#FF531A] mr-1 flex items-center gap-1">
                         <span>🏢 新館分區：</span>
                       </span>
                       {orgGroupsData.xinGuan.map(({ name, count }) => {
@@ -1078,20 +1100,20 @@
                           <button
                             key={name}
                             onClick={() => toggleOrg(name)}
-                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition border ${
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[13px] font-bold transition border ${
                               isSelected 
                                 ? 'bg-[#FF531A] text-white border-[#FF531A] shadow-sm' 
                                 : 'bg-white text-slate-700 border-slate-200 hover:border-[#FF531A]/40 hover:bg-[#FF531A]/10 hover:text-[#FF531A]'
                             }`}
                           >
                             <span 
-                              className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-1 ring-black/10 shadow-sm"
+                              className="w-3 h-3 rounded-full flex-shrink-0 ring-1 ring-black/10 shadow-sm"
                               style={{ backgroundColor: colorObj.bg }}
                             />
                             <span>{name}</span>
-                            {isSelected && <IconCheck size={11} className="text-white flex-shrink-0" />}
-                            <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
-                              isSelected ? 'bg-white/20 text-white font-bold' : 'bg-slate-100 text-slate-500'
+                            {isSelected && <IconCheck size={13} className="text-white flex-shrink-0" />}
+                            <span className={`text-xs font-mono px-1.5 py-0.5 rounded-md ${
+                              isSelected ? 'bg-white/20 text-white font-bold' : 'bg-slate-100 text-slate-600 font-semibold'
                             }`}>
                               {count}
                             </span>
@@ -1100,30 +1122,30 @@
                       })}
                       <button
                         onClick={() => setExpandedGroups(prev => ({ ...prev, xinGuan: false }))}
-                        className="ml-auto text-slate-400 hover:text-[#FF531A] p-1 rounded hover:bg-[#FF531A]/15 transition"
+                        className="ml-auto text-slate-400 hover:text-[#FF531A] p-1.5 rounded-lg hover:bg-[#FF531A]/15 transition"
                         title="收合新館分區"
                       >
-                        <IconX size={13} />
+                        <IconX size={15} />
                       </button>
                     </div>
                   )}
                 </div>
 
                 {/* 下層：搜尋欄 */}
-                <div className="relative w-full max-w-md">
+                <div className="relative w-full max-w-lg">
                   <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#C7000b]/70">
-                    <IconSearch size={16} />
+                    <IconSearch size={17} />
                   </div>
                   <input 
                     type="text" 
                     placeholder="搜尋文檔名稱、機構名稱、分類..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-800 placeholder-slate-400 pl-10 pr-8 py-2 rounded-xl text-xs border border-slate-200 focus:outline-none focus:bg-white focus:border-[#C7000b] focus:ring-2 focus:ring-[#FDDDE6] transition shadow-inner"
+                    className="w-full bg-slate-50 text-slate-800 placeholder-slate-400 pl-10 pr-8 py-2.5 rounded-xl text-[13px] border border-slate-200 focus:outline-none focus:bg-white focus:border-[#C7000b] focus:ring-2 focus:ring-[#FDDDE6] transition shadow-inner"
                   />
                   {searchQuery && (
                     <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#C7000b]">
-                      <IconX size={14} />
+                      <IconX size={15} />
                     </button>
                   )}
                 </div>
@@ -1452,7 +1474,7 @@
                   </div>
                 )}
 
-                {/* 檔案展示區：方框式 (Grid) 或 清單式 (List) */}
+                {/* 檔案展示區：方框式 (Grid) 或 清單式 (List) (文字全面放大提升清晰度) */}
                 {viewMode === 'grid' ? (
                   /* 1. 方框式 (卡片網格視圖 - 參照清福企業識別白底、#FDDDE6 粉紅圖示框與 #C7000b 主色) */
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
@@ -1478,18 +1500,18 @@
                                 <button
                                   type="button"
                                   onClick={() => toggleFileSelection(item.id)}
-                                  className={`w-4 h-4 rounded border flex items-center justify-center transition flex-shrink-0 ${
+                                  className={`w-4.5 h-4.5 w-[18px] h-[18px] rounded border flex items-center justify-center transition flex-shrink-0 ${
                                     isSelected 
                                       ? 'bg-[#C7000b] border-[#C7000b] text-white' 
                                       : 'border-slate-300 bg-white hover:border-[#C7000b]'
                                   }`}
                                   title={isSelected ? "取消選取" : "選取檔案"}
                                 >
-                                  {isSelected && <IconCheck size={11} className="text-white" />}
+                                  {isSelected && <IconCheck size={12} className="text-white" />}
                                 </button>
 
                                 {/* 館別標籤 */}
-                                <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border tracking-wider flex-shrink-0 ${
+                                <span className={`px-2.5 py-0.5 rounded-md text-xs font-bold border tracking-wider flex-shrink-0 ${
                                   grp === '本館' 
                                     ? 'bg-[#FDDDE6] text-[#C7000b] border-[#F8C8DC]' 
                                     : 'bg-[#FF531A]/15 text-[#FF531A] border-[#FF531A]/30'
@@ -1499,36 +1521,36 @@
 
                                 {/* 放大且清晰之機構專屬顏色徽章 */}
                                 <span 
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-xl text-xs font-bold text-white tracking-wide border shadow-sm transition-transform group-hover:scale-105 select-text"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[13px] font-bold text-white tracking-wide border shadow-sm transition-transform group-hover:scale-105 select-text"
                                   style={{
                                     backgroundColor: colorObj.bg,
                                     borderColor: colorObj.border
                                   }}
                                 >
-                                  <span className="w-1.5 h-1.5 rounded-full bg-white opacity-90 shadow-sm flex-shrink-0" />
-                                  <span className="truncate max-w-[120px]">{item.org}</span>
+                                  <span className="w-2 h-2 rounded-full bg-white opacity-90 shadow-sm flex-shrink-0" />
+                                  <span className="truncate max-w-[130px]">{item.org}</span>
                                 </span>
                               </div>
                             </div>
 
                             {/* 視覺識別設計區塊：左側淺粉方塊 (#FDDDE6 / #F8C8DC) + 右側文檔標題與分類膠囊 */}
-                            <div className="flex items-start gap-3 mb-3">
-                              <div className="w-11 h-11 rounded-xl bg-[#FDDDE6] border border-[#F8C8DC] flex items-center justify-center text-[#C7000b] flex-shrink-0 group-hover:bg-[#F8C8DC]/80 transition shadow-inner">
-                                <IconFileText size={20} />
+                            <div className="flex items-start gap-3 mb-3.5">
+                              <div className="w-12 h-12 rounded-xl bg-[#FDDDE6] border border-[#F8C8DC] flex items-center justify-center text-[#C7000b] flex-shrink-0 group-hover:bg-[#F8C8DC]/80 transition shadow-inner">
+                                <IconFileText size={22} />
                               </div>
                               <div className="min-w-0 flex-1">
                                 {/* 檔名 */}
-                                <h3 className="font-bold text-slate-800 text-xs line-clamp-2 mb-1.5 group-hover:text-[#C7000b] transition break-all leading-relaxed" title={item.name}>
+                                <h3 className="font-bold text-slate-800 text-[14px] line-clamp-2 mb-2 group-hover:text-[#C7000b] transition break-all leading-snug" title={item.name}>
                                   {item.name}
                                 </h3>
 
                                 {/* 分類與子分類標籤 */}
-                                <div className="flex flex-wrap gap-1">
-                                  <span className="px-2 py-0.5 rounded-full bg-[#C7000b]/10 text-[#C7000b] border border-[#F8C8DC] text-[10px] font-bold truncate max-w-full">
+                                <div className="flex flex-wrap gap-1.5">
+                                  <span className="px-2.5 py-0.5 rounded-full bg-[#C7000b]/10 text-[#C7000b] border border-[#F8C8DC] text-xs font-bold truncate max-w-full">
                                     {item.category}
                                   </span>
                                   {item.subCategory && (
-                                    <span className="px-2 py-0.5 rounded-full bg-[#FDDDE6]/70 text-slate-700 border border-[#F8C8DC]/80 text-[10px] font-medium truncate max-w-full">
+                                    <span className="px-2.5 py-0.5 rounded-full bg-[#FDDDE6]/70 text-slate-700 border border-[#F8C8DC]/80 text-xs font-semibold truncate max-w-full">
                                       {item.subCategory}
                                     </span>
                                   )}
@@ -1538,10 +1560,10 @@
                           </div>
 
                           {/* 底部元數據與操作按鈕 */}
-                          <div className="pt-2.5 border-t border-slate-100 space-y-2 text-[10px]">
+                          <div className="pt-2.5 border-t border-slate-100 space-y-2.5 text-xs">
                             <div className="flex justify-between items-center text-slate-500">
-                              <span className="flex items-center gap-1 font-mono text-slate-600 font-semibold">
-                                <IconCalendar size={11} className="text-[#C7000b]" /> {item.rocYear}_{item.month}
+                              <span className="flex items-center gap-1.5 font-mono text-slate-700 font-bold text-xs">
+                                <IconCalendar size={13} className="text-[#C7000b]" /> {item.rocYear}_{item.month}
                               </span>
                             </div>
 
@@ -1551,9 +1573,9 @@
                                 href={item.viewUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex-1 flex items-center justify-center gap-1 bg-slate-100 hover:bg-[#FDDDE6]/60 text-slate-700 hover:text-[#C7000b] border border-slate-200/80 hover:border-[#F8C8DC] py-1.5 rounded-full transition font-semibold"
+                                className="flex-1 flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-[#FDDDE6]/60 text-slate-700 hover:text-[#C7000b] border border-slate-200/80 hover:border-[#F8C8DC] py-2 rounded-full transition font-bold text-xs"
                               >
-                                <IconExternalLink size={12} />
+                                <IconExternalLink size={13} />
                                 <span>預覽文檔</span>
                               </a>
                               {item.downloadUrl && (
@@ -1562,9 +1584,9 @@
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   download
-                                  className="flex-1 flex items-center justify-center gap-1 bg-[#C7000b] hover:bg-[#a30009] text-white py-1.5 rounded-full transition font-bold shadow-sm shadow-[#C7000b]/20"
+                                  className="flex-1 flex items-center justify-center gap-1.5 bg-[#C7000b] hover:bg-[#a30009] text-white py-2 rounded-full transition font-bold text-xs shadow-sm shadow-[#C7000b]/20"
                                 >
-                                  <IconDownload size={12} />
+                                  <IconDownload size={13} />
                                   <span>下載</span>
                                 </a>
                               )}
@@ -1576,32 +1598,32 @@
                     })}
                   </div>
                 ) : (
-                  /* 2. 清單式 (詳細表格視圖) */
+                  /* 2. 清單式 (詳細表格視圖 - 全面放大文字與按鈕) */
                   <div className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-sm">
                     <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs text-slate-700 border-collapse">
-                        <thead className="bg-[#FDDDE6]/45 text-slate-700 uppercase text-[11px] tracking-wider border-b border-[#F8C8DC] sticky top-0 z-10 select-none">
+                      <table className="w-full text-left text-sm text-slate-700 border-collapse">
+                        <thead className="bg-[#FDDDE6]/45 text-slate-800 uppercase text-[13px] tracking-wider border-b border-[#F8C8DC] sticky top-0 z-10 select-none">
                           <tr>
-                            <th className="py-3 px-3 w-10 text-center font-bold">
+                            <th className="py-3.5 px-3 w-12 text-center font-bold">
                               <button
                                 type="button"
                                 onClick={toggleSelectCurrentPage}
-                                className={`w-4 h-4 rounded border mx-auto flex items-center justify-center transition ${
+                                className={`w-[18px] h-[18px] rounded border mx-auto flex items-center justify-center transition ${
                                   isCurrentPageAllSelected 
                                     ? 'bg-[#C7000b] border-[#C7000b] text-white' 
                                     : 'border-slate-300 bg-white hover:border-[#C7000b]'
                                 }`}
                                 title={isCurrentPageAllSelected ? "取消全選本頁" : "全選本頁"}
                               >
-                                {isCurrentPageAllSelected && <IconCheck size={11} className="text-white" />}
+                                {isCurrentPageAllSelected && <IconCheck size={12} className="text-white" />}
                               </button>
                             </th>
-                            <th className="py-3 px-4 font-bold text-[#C7000b]">機構 / 館別</th>
-                            <th className="py-3 px-4 font-bold">檔案名稱</th>
-                            <th className="py-3 px-4 font-bold">檔案分類</th>
-                            <th className="py-3 px-4 font-bold">子分類</th>
-                            <th className="py-3 px-4 font-bold">民國年月</th>
-                            <th className="py-3 px-4 font-bold text-right">操作</th>
+                            <th className="py-3.5 px-4 font-bold text-[#C7000b]">機構 / 館別</th>
+                            <th className="py-3.5 px-4 font-bold">檔案名稱</th>
+                            <th className="py-3.5 px-4 font-bold">檔案分類</th>
+                            <th className="py-3.5 px-4 font-bold">子分類</th>
+                            <th className="py-3.5 px-4 font-bold">民國年月</th>
+                            <th className="py-3.5 px-4 font-bold text-right">操作</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -1620,25 +1642,25 @@
                                 }`}
                               >
                                 {/* 勾選框 */}
-                                <td className="py-2.5 px-3 text-center">
+                                <td className="py-3 px-3 text-center">
                                   <button
                                     type="button"
                                     onClick={() => toggleFileSelection(item.id)}
-                                    className={`w-4 h-4 rounded border mx-auto flex items-center justify-center transition ${
+                                    className={`w-[18px] h-[18px] rounded border mx-auto flex items-center justify-center transition ${
                                       isSelected 
                                         ? 'bg-[#C7000b] border-[#C7000b] text-white' 
                                         : 'border-slate-300 bg-white hover:border-[#C7000b]'
                                     }`}
                                     title={isSelected ? "取消選取" : "選取檔案"}
                                   >
-                                    {isSelected && <IconCheck size={11} className="text-white" />}
+                                    {isSelected && <IconCheck size={12} className="text-white" />}
                                   </button>
                                 </td>
 
                                 {/* 機構與館別 */}
-                                <td className="py-2.5 px-4 whitespace-nowrap">
+                                <td className="py-3 px-4 whitespace-nowrap">
                                   <div className="flex items-center gap-2">
-                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${
+                                    <span className={`px-2 py-0.5 rounded-md text-xs font-bold border ${
                                       grp === '本館' 
                                         ? 'bg-[#FDDDE6] text-[#C7000b] border-[#F8C8DC]' 
                                         : 'bg-[#FF531A]/15 text-[#FF531A] border-[#FF531A]/30'
@@ -1646,26 +1668,26 @@
                                       {grp}
                                     </span>
                                     <span 
-                                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-xs font-bold text-white border shadow-sm"
+                                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[13px] font-bold text-white border shadow-sm"
                                       style={{
                                         backgroundColor: colorObj.bg,
                                         borderColor: colorObj.border
                                       }}
                                     >
-                                      <span className="w-1.5 h-1.5 rounded-full bg-white opacity-90" />
+                                      <span className="w-2 h-2 rounded-full bg-white opacity-90" />
                                       <span>{item.org}</span>
                                     </span>
                                   </div>
                                 </td>
 
                                 {/* 檔案名稱 */}
-                                <td className="py-2.5 px-4 min-w-[240px] max-w-[360px]">
+                                <td className="py-3 px-4 min-w-[260px] max-w-[420px]">
                                   <div className="flex items-center gap-2.5">
-                                    <span className="w-6 h-6 rounded-lg bg-[#FDDDE6] border border-[#F8C8DC] flex items-center justify-center text-[#C7000b] flex-shrink-0">
-                                      <IconFileText size={13} />
+                                    <span className="w-7 h-7 rounded-lg bg-[#FDDDE6] border border-[#F8C8DC] flex items-center justify-center text-[#C7000b] flex-shrink-0">
+                                      <IconFileText size={15} />
                                     </span>
                                     <span 
-                                      className="font-semibold text-slate-800 group-hover:text-[#C7000b] transition truncate select-text cursor-pointer"
+                                      className="font-bold text-[14px] text-slate-800 group-hover:text-[#C7000b] transition truncate select-text cursor-pointer"
                                       title={item.name}
                                       onClick={() => window.open(item.viewUrl, '_blank', 'noopener,noreferrer')}
                                     >
@@ -1675,39 +1697,39 @@
                                 </td>
 
                                 {/* 檔案分類 */}
-                                <td className="py-2.5 px-4 whitespace-nowrap">
-                                  <span className="px-2.5 py-0.5 rounded-full bg-[#C7000b]/10 text-[#C7000b] border border-[#F8C8DC] text-[11px] font-bold">
+                                <td className="py-3 px-4 whitespace-nowrap">
+                                  <span className="px-3 py-1 rounded-full bg-[#C7000b]/10 text-[#C7000b] border border-[#F8C8DC] text-[13px] font-bold">
                                     {item.category}
                                   </span>
                                 </td>
 
                                 {/* 子分類 */}
-                                <td className="py-2.5 px-4 whitespace-nowrap">
+                                <td className="py-3 px-4 whitespace-nowrap">
                                   {item.subCategory ? (
-                                    <span className="px-2.5 py-0.5 rounded-full bg-[#FDDDE6]/70 text-slate-700 border border-[#F8C8DC] text-[11px] font-medium">
+                                    <span className="px-3 py-1 rounded-full bg-[#FDDDE6]/70 text-slate-700 border border-[#F8C8DC] text-[13px] font-semibold">
                                       {item.subCategory}
                                     </span>
                                   ) : (
-                                    <span className="text-slate-400 text-[11px]">-</span>
+                                    <span className="text-slate-400 text-[13px]">-</span>
                                   )}
                                 </td>
 
                                 {/* 年月份 */}
-                                <td className="py-2.5 px-4 whitespace-nowrap font-mono text-[11px] text-slate-600 font-semibold">
+                                <td className="py-3 px-4 whitespace-nowrap font-mono text-[13px] text-slate-700 font-bold">
                                   <span>{item.rocYear}_{item.month}</span>
                                 </td>
 
                                 {/* 操作按鈕 */}
-                                <td className="py-2.5 px-4 whitespace-nowrap text-right">
-                                  <div className="flex items-center justify-end gap-1.5">
+                                <td className="py-3 px-4 whitespace-nowrap text-right">
+                                  <div className="flex items-center justify-end gap-2">
                                     <a
                                       href={item.viewUrl}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       title="在 Google 雲端硬碟預覽文檔"
-                                      className="inline-flex items-center gap-1 bg-slate-100 hover:bg-[#FDDDE6]/60 text-slate-700 hover:text-[#C7000b] px-2.5 py-1 rounded-full text-xs font-semibold transition border border-slate-200 hover:border-[#F8C8DC]"
+                                      className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-[#FDDDE6]/60 text-slate-700 hover:text-[#C7000b] px-3 py-1.5 rounded-full text-[13px] font-bold transition border border-slate-200 hover:border-[#F8C8DC]"
                                     >
-                                      <IconExternalLink size={12} />
+                                      <IconExternalLink size={13} />
                                       <span>預覽</span>
                                     </a>
                                     {item.downloadUrl && (
@@ -1717,9 +1739,9 @@
                                         rel="noopener noreferrer"
                                         download
                                         title="下載此檔案"
-                                        className="inline-flex items-center gap-1 bg-[#C7000b] hover:bg-[#a30009] text-white px-2.5 py-1 rounded-full text-xs font-bold transition shadow-sm"
+                                        className="inline-flex items-center gap-1.5 bg-[#C7000b] hover:bg-[#a30009] text-white px-3 py-1.5 rounded-full text-[13px] font-bold transition shadow-sm"
                                       >
-                                        <IconDownload size={12} />
+                                        <IconDownload size={13} />
                                         <span>下載</span>
                                       </a>
                                     )}
@@ -1836,7 +1858,7 @@
                       <div>
                         <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
                           <span>清福檔案庫 - 版本更新紀錄</span>
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#C7000b] text-white font-mono">v3.6</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#C7000b] text-white font-mono">v3.7</span>
                         </h3>
                         <p className="text-[11px] text-slate-500 mt-0.5">完整記錄系統演進與各版本功能變更清單</p>
                       </div>
@@ -1852,14 +1874,30 @@
                   {/* 內容區塊 */}
                   <div className="overflow-y-auto custom-scrollbar pr-2 space-y-3.5 flex-1">
                     
-                    {/* v3.6 */}
+                    {/* v3.7 */}
                     <div className="bg-[#FDDDE6]/30 p-4 rounded-xl border border-[#F8C8DC] space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-[#C7000b] text-xs flex items-center gap-1.5">
-                          <span className="px-2 py-0.5 rounded-md bg-[#C7000b] text-white font-mono text-[10px]">v3.6</span>
-                          <span>清福企業識別視覺風格全面升級</span>
+                          <span className="px-2 py-0.5 rounded-md bg-[#C7000b] text-white font-mono text-[10px]">v3.7</span>
+                          <span>機構指定排序、頂部篩選區與檔案列表文字放大</span>
                         </span>
                         <span className="text-[10px] text-slate-500 font-mono">2026-11-11 (最新版本)</span>
+                      </div>
+                      <ul className="list-disc pl-4 space-y-1 text-slate-700 text-[11px] leading-relaxed">
+                        <li><b>放大「機構 / 區域分類」區塊</b>：提升頂部本館、新館按鈕組與展開分區標籤的字體與按鈕尺寸，點擊與檢視更清晰。</li>
+                        <li><b>機構分區固定優先排序</b>：本館固定依「清福、清氣、清心、清平、清安、清春、清日、清照、清風、清景、清山、清泉、清水、清清、清涼、護家」優先排序；新館依「一館、二館、三館、幼兒園」優先排序。</li>
+                        <li><b>篩選檔案區塊文字全面放大</b>：方框式卡片與清單式表格的館別、機構徽章、檔案名稱、分類、子分類、民國年月與預覽/下載按鈕全面放大 1～2 級。</li>
+                      </ul>
+                    </div>
+
+                    {/* v3.6 */}
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-200 text-slate-700 font-mono text-[10px]">v3.6</span>
+                          <span>清福企業識別視覺風格全面升級</span>
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-mono">2026-11-11</span>
                       </div>
                       <ul className="list-disc pl-4 space-y-1 text-slate-700 text-[11px] leading-relaxed">
                         <li><b>清福企業識別色系</b>：採用乾淨明亮的專業中性白底色調，搭配清福專屬識別紅（<code>#C7000b</code>）為主視覺核心，並結合柔粉（<code>#F8C8DC</code>）、淺粉（<code>#FDDDE6</code>）與活力橘紅（<code>#FF531A</code>）作為次要強調色與輔助容器色。</li>

@@ -571,9 +571,9 @@
                  searchQuery.trim() !== '';
         }, [selectedYears, selectedMonths, selectedOrgs, selectedCategories, selectedSubCategories, searchQuery]);
 
-        // 篩選檔案清單 (年份 + 機構 + 檔案類別/子分類 跨維度複合多選過濾)
+        // 篩選檔案清單 (年份 + 機構 + 檔案類別/子分類 跨維度複合多選過濾，並依「子分類優先群組 + 民國年月由大到小」排序)
         const filteredRecords = useMemo(() => {
-          return allCombinedRecords.filter(item => {
+          const matched = allCombinedRecords.filter(item => {
             // 1. 關鍵字檢索 (比對名稱、機構、分類、子分類)
             if (searchQuery.trim() !== '') {
               const q = searchQuery.toLowerCase();
@@ -613,6 +613,33 @@
             }
 
             return true;
+          });
+
+          // 排序邏輯：
+          // 1. 子分類相同的優先放在一起（有子分類者優先於無子分類，相同子分類群組化）
+          // 2. 同一子分類群組內，依「民國年月」由大到小排序（清單式：由上至下；方框式：由左至右）
+          return matched.sort((a, b) => {
+            const subA = (a.subCategory || '').trim();
+            const subB = (b.subCategory || '').trim();
+
+            if (subA !== subB) {
+              if (subA && !subB) return -1;
+              if (!subA && subB) return 1;
+              return subA.localeCompare(subB, 'zh-Hant-TW');
+            }
+
+            // 比較民國年 (由大到小)
+            const yearDiff = (Number(b.rocYear) || 0) - (Number(a.rocYear) || 0);
+            if (yearDiff !== 0) return yearDiff;
+
+            // 比較月份 (由大到小)
+            const monthDiff = (Number(b.month) || 0) - (Number(a.month) || 0);
+            if (monthDiff !== 0) return monthDiff;
+
+            // 若年月皆相同，維持檔案分類與檔名穩定順序
+            const catCmp = (a.category || '').localeCompare(b.category || '', 'zh-Hant-TW');
+            if (catCmp !== 0) return catCmp;
+            return (a.name || '').localeCompare(b.name || '', 'zh-Hant-TW');
           });
         }, [allCombinedRecords, searchQuery, selectedYears, selectedMonths, selectedOrgs, selectedCategories, selectedSubCategories]);
 
@@ -1890,6 +1917,7 @@
                       <ul className="list-disc pl-4 space-y-1 text-slate-700 text-[11px] leading-relaxed">
                         <li><b>放大「機構 / 區域分類」區塊</b>：提升頂部本館、新館按鈕組與展開分區標籤的字體與按鈕尺寸，點擊與檢視更清晰。</li>
                         <li><b>機構分區與月份排序最佳化</b>：本館固定依「清福、清氣、清心、清平、清安、清春、清日、清照、清風、清景、清山、清泉、清水、清清、清涼、護家」優先排序，新館依「一館、二館、三館、幼兒園」優先排序；年份篩選中的月份改為「01 月至 12 月」由小到大排序。</li>
+                        <li><b>檔案清單智慧排序（子分類群組 + 民國年月由大到小）</b>：篩選結果優先將相同「子分類」歸類在一起，並依「民國年月」由大到小排序（清單式由上至下、方框式由左至右）。</li>
                         <li><b>篩選檔案區塊文字全面放大</b>：方框式卡片與清單式表格的館別、機構徽章、檔案名稱、分類、子分類、民國年月與預覽/下載按鈕全面放大 1～2 級。</li>
                       </ul>
                     </div>

@@ -1162,23 +1162,41 @@
                   )}
                 </div>
 
-                {/* 下層：搜尋欄 */}
-                <div className="relative w-full max-w-lg">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#C7000b]/70">
-                    <IconSearch size={17} />
+                {/* 下層：高辨識度搜尋欄 */}
+                <div className="flex items-center gap-3 flex-wrap pt-1 border-t border-slate-100">
+                  <span className="text-[15px] font-bold text-slate-800 flex items-center gap-2 mr-1">
+                    <span className="p-1.5 rounded-xl bg-[#FDDDE6] text-[#C7000b] border border-[#F8C8DC] shadow-sm">
+                      <IconSearch size={18} />
+                    </span>
+                    <span>關鍵字搜尋：</span>
+                  </span>
+
+                  <div className="relative flex-1 min-w-[280px] max-w-2xl">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#C7000b]">
+                      <IconSearch size={18} />
+                    </div>
+                    <input 
+                      type="text" 
+                      placeholder="請輸入檔案名稱、機構名稱、分類或子分類關鍵字..." 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full bg-white text-slate-900 font-semibold placeholder-slate-500 pl-11 pr-20 py-2.5 rounded-2xl text-[14px] border-2 border-[#F8C8DC] hover:border-[#C7000b]/70 focus:outline-none focus:bg-white focus:border-[#C7000b] focus:ring-4 focus:ring-[#FDDDE6]/70 transition shadow-sm"
+                    />
+                    {searchQuery ? (
+                      <button 
+                        onClick={() => setSearchQuery('')} 
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-xl bg-[#FDDDE6] hover:bg-[#C7000b] text-[#C7000b] hover:text-white text-xs font-bold flex items-center gap-1 transition"
+                        title="清除搜尋關鍵字"
+                      >
+                        <IconX size={13} />
+                        <span>清除</span>
+                      </button>
+                    ) : (
+                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded-md bg-[#FDDDE6]/60 text-[#C7000b] border border-[#F8C8DC] text-[11px] font-bold pointer-events-none">
+                        即時檢索
+                      </span>
+                    )}
                   </div>
-                  <input 
-                    type="text" 
-                    placeholder="搜尋文檔名稱、機構名稱、分類..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-800 placeholder-slate-400 pl-10 pr-8 py-2.5 rounded-xl text-[13px] border border-slate-200 focus:outline-none focus:bg-white focus:border-[#C7000b] focus:ring-2 focus:ring-[#FDDDE6] transition shadow-inner"
-                  />
-                  {searchQuery && (
-                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#C7000b]">
-                      <IconX size={15} />
-                    </button>
-                  )}
                 </div>
               </header>
 
@@ -1916,6 +1934,7 @@
                         <span className="text-[10px] text-slate-500 font-mono">2026-11-11 (最新版本)</span>
                       </div>
                       <ul className="list-disc pl-4 space-y-1 text-slate-700 text-[11px] leading-relaxed">
+                        <li><b>高辨識度搜尋列強化</b>：為搜尋欄加上「🔍 關鍵字搜尋：」專屬標題與圖示、加粗粉色外框（<code>border-2 border-[#F8C8DC]</code>）、加深提示文字與「即時檢索 / 清除」醒目徽章，視覺一眼即見。</li>
                         <li><b>放大「機構 / 區域分類」區塊與單一展開模式</b>：提升頂部本館、新館按鈕組與展開分區標籤尺寸；點選不同館別或年份時，皆採「一次只展開一個篩選框」的手風琴模式，版面清爽不堆疊。</li>
                         <li><b>機構分區與月份排序最佳化</b>：本館固定依「清福、清氣、清心、清平、清安、清春、清日、清照、清風、清景、清山、清泉、清水、清清、清涼、護家」優先排序，新館依「一館、二館、三館、幼兒園」優先排序；年份篩選中的月份改為「01 月至 12 月」由小到大排序。</li>
                         <li><b>檔案清單智慧排序（子分類群組 + 民國年月由大到小）</b>：篩選結果優先將相同「子分類」歸類在一起，並依「民國年月」由大到小排序（清單式由上至下、方框式由左至右）。</li>
